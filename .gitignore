@@ -1,0 +1,19 @@
+# Logs
+*.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+.cache
+.output
+
+# Editor directories and files
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+package-lock.json

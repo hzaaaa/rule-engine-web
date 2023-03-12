@@ -1,0 +1,7 @@
+# .eslintignore 以下文件或目录不会被 eslint 处理
+node_modules
+dist
+*.sh
+*.md
+.vscode
+/public

@@ -1,0 +1,7 @@
+# .stylelintignore 以下文件或目录不会被 stylelint 处理
+/dist/*
+/public/*
+public/*
+
+/node_modules/**
+/.nuxt/*
