@@ -49,3 +49,61 @@ export function getFisrtRoute(routes: any): any {
   }
   return null;
 }
+
+/**
+ * @description GeekerAdmin 使用递归，过滤出需要渲染在左侧菜单的列表（剔除 isHide == true 的菜单）
+ * @param {Array} menuList 所有菜单列表
+ * @return array
+ * */
+export function getGeekerAdminShowMenuList(menuList: Menu.MenuOptions[]) {
+  let newMenuList: Menu.MenuOptions[] = JSON.parse(JSON.stringify(menuList));
+  return newMenuList.filter((item) => {
+    item.children?.length && (item.children = getGeekerAdminShowMenuList(item.children));
+    return !item.meta?.isHide;
+  });
+}
+
+/**
+ * @description 格式化时间
+ * @param date 时间格式
+ * @param format 字符串格式，默认值 "yyyy-MM-dd HH:mm:ss"
+ * @return 格式化后的字符串
+ * */
+export function dateToStr(date: Date, format = "yyyy-MM-dd HH:mm:ss") {
+  if (!(date instanceof Date)) {
+    console.warn("dateToStr 工具方法报错：请输入 Date 格式的日期");
+    return;
+  }
+  let year = String(date.getFullYear());
+  let month = String(date.getMonth() + 1).padStart(2, "0");
+  let day = String(date.getDate()).padStart(2, "0");
+  let hour = String(date.getHours()).padStart(2, "0");
+  let min = String(date.getMinutes()).padStart(2, "0");
+  let sec = String(date.getSeconds()).padStart(2, "0");
+  return format
+    .replace("yyyy", year)
+    .replace("MM", month)
+    .replace("dd", day)
+    .replace("HH", hour)
+    .replace("mm", min)
+    .replace("ss", sec);
+}
+
+/**
+ * @description 复制文本内容到剪贴板
+ * @param copyContent 需要复制的文本内容
+ * */
+export function copyTextToClipboard(copyContent: string) {
+  if (navigator.clipboard) {
+    // 新api，安全限制较多，https 或 localhost 才可用
+    navigator.clipboard.writeText(copyContent);
+  } else {
+    // 传统api，随时可能会废弃
+    const tempInput = document.createElement("input");
+    tempInput.setAttribute("value", copyContent);
+    document.body.append(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    tempInput.remove();
+  }
+}

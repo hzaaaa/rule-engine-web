@@ -9,10 +9,10 @@ declare module "@vue/runtime-core" {
   export interface GlobalComponents {
     404: typeof import("./src/components/ErrorMessage/404.vue")["default"];
     ElAside: typeof import("element-plus/es")["ElAside"];
-    ElBreadcrumb: typeof import("element-plus/es")["ElBreadcrumb"];
-    ElBreadcrumbItem: typeof import("element-plus/es")["ElBreadcrumbItem"];
     ElButton: typeof import("element-plus/es")["ElButton"];
+    ElConfigProvider: typeof import("element-plus/es")["ElConfigProvider"];
     ElContainer: typeof import("element-plus/es")["ElContainer"];
+    ElDatePicker: typeof import("element-plus/es")["ElDatePicker"];
     ElDialog: typeof import("element-plus/es")["ElDialog"];
     ElDropdown: typeof import("element-plus/es")["ElDropdown"];
     ElDropdownItem: typeof import("element-plus/es")["ElDropdownItem"];
@@ -27,7 +27,7 @@ declare module "@vue/runtime-core" {
     ElMenu: typeof import("element-plus/es")["ElMenu"];
     ElMenuItem: typeof import("element-plus/es")["ElMenuItem"];
     ElOption: typeof import("element-plus/es")["ElOption"];
-    ElPopover: typeof import("element-plus/es")["ElPopover"];
+    ElPagination: typeof import("element-plus/es")["ElPagination"];
     ElRadio: typeof import("element-plus/es")["ElRadio"];
     ElRadioButton: typeof import("element-plus/es")["ElRadioButton"];
     ElRadioGroup: typeof import("element-plus/es")["ElRadioGroup"];
@@ -38,11 +38,7 @@ declare module "@vue/runtime-core" {
     ElSwitch: typeof import("element-plus/es")["ElSwitch"];
     ElTable: typeof import("element-plus/es")["ElTable"];
     ElTableColumn: typeof import("element-plus/es")["ElTableColumn"];
-    ElTree: typeof import("element-plus/es")["ElTree"];
     RouterLink: typeof import("vue-router")["RouterLink"];
     RouterView: typeof import("vue-router")["RouterView"];
-  }
-  export interface ComponentCustomProperties {
-    vLoading: typeof import("element-plus/es")["ElLoadingDirective"];
   }
 }

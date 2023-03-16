@@ -15,6 +15,8 @@ export const initDynamicRouter = async () => {
   let dynamicRouter = filterAsyncRouter(JSON.parse(JSON.stringify(authStore.routerMenuListGet)));
 
   // 2. 添加动态路由
+  console.log("dynamicRouter", dynamicRouter);
+
   authStore.setAuthMenuList(dynamicRouter);
   dynamicRouter.forEach((item: any) => {
     router.addRoute(item);

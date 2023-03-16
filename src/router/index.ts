@@ -7,7 +7,7 @@ import Layout from "@/layouts/Layout.vue";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/home",
+    redirect: "/app/list",
   },
   {
     path: "/home",
@@ -55,27 +55,71 @@ const routes: RouteRecordRaw[] = [
       },
     ], // 注意这里要带上 文件后缀.vue
   },
+  // /*
   {
-    path: "/config",
+    path: "/app",
+    name: "App",
     component: Layout,
+    redirect: "/app/list",
+    meta: {
+      icon: "MessageBox",
+      title: "配置",
+      isLink: "",
+      isHide: false,
+      isFull: false,
+      isAffix: false,
+      isKeepAlive: true,
+    },
     children: [
       {
-        path: "",
-        name: "Config",
-        component: () => import("@/views/config/Config.vue"),
+        path: "/app/list",
+        name: "AppList",
+        component: () => import("@/views/config/AppList.vue"),
+        meta: {
+          icon: "MessageBox",
+          title: "App列表",
+          activeMenu: "/app",
+          isLink: "",
+          isHide: true,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
       },
       {
-        path: "list/:app",
-        name: "List",
-        component: () => import("@/views/config/List.vue"),
+        path: "/base/list",
+        name: "BaseList",
+        component: () => import("@/views/config/BaseList.vue"),
+        meta: {
+          icon: "MessageBox",
+          title: "Base列表",
+          activeMenu: "/app",
+          isLink: "",
+          isHide: true,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
       },
       {
-        path: "detail/:app/:iceId",
-        name: "Detail",
-        component: () => import("@/views/config/Detail.vue"),
+        path: "/conf/detail",
+        name: "ConfDetail",
+        component: () => import("@/views/config/ConfDetail.vue"),
+        meta: {
+          icon: "MessageBox",
+          title: "Conf详情",
+          activeMenu: "/app",
+          isLink: "",
+          isHide: true,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
       },
     ], // 注意这里要带上 文件后缀.vue
   },
+  // */
+
   // {
   //   path: "/:catchAll(.*)",
   //   component: () => import("@/components/ErrorMessage/404.vue"),

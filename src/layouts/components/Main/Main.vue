@@ -35,6 +35,7 @@ onBeforeUnmount(() => {
 <style scoped lang="scss">
 .el-main {
   overflow-x: hidden;
+  position: relative;
   box-sizing: border-box;
   padding: 10px 12px;
   background-color: #f0f2f5;

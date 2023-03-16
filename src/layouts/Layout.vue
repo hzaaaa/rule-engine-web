@@ -4,7 +4,7 @@
       <div class="menu" :style="{ width: isCollapse ? '65px' : '210px' }">
         <div class="logo flx-center">
           <img src="@/assets/images/logo.svg" alt="logo" />
-          <span v-show="!isCollapse">RuleEngine</span>
+          <span v-show="!isCollapse" @click="test">RuleEngine</span>
         </div>
         <el-scrollbar>
           <el-menu
@@ -17,7 +17,7 @@
             text-color="#bdbdc0"
             active-text-color="#ffffff"
           >
-            <SubMenu :menuList="menuList" />
+            <SubMenu :menuList="showMenuList" />
           </el-menu>
         </el-scrollbar>
       </div>
@@ -40,17 +40,23 @@ import Main from "@/layouts/components/Main/Main.vue";
 import ToolBarLeft from "@/layouts/components/Header/ToolBarLeft.vue";
 import ToolBarRight from "@/layouts/components/Header/ToolBarRight.vue";
 import SubMenu from "@/layouts/components/Menu/SubMenu.vue";
+import { getGeekerAdminShowMenuList } from "@/utils/util";
 
 const route = useRoute();
 const globalStore = useGlobalStore();
 const isCollapse = computed(() => globalStore.themeConfig.isCollapse);
 const activeMenu = computed(() => (route.meta.activeMenu ? route.meta.activeMenu : route.path));
+const test = () => {
+  console.log("test", route.meta);
+};
+const showMenuList = computed(() => getGeekerAdminShowMenuList(menuList));
 const menuList = [
   {
-    path: "/config",
-    name: "config",
+    path: "/app",
+    name: "App",
+    redirect: "/app/list",
     meta: {
-      icon: "Operation",
+      icon: "MessageBox",
       title: "配置",
       isLink: "",
       isHide: false,
@@ -58,7 +64,67 @@ const menuList = [
       isAffix: false,
       isKeepAlive: true,
     },
+    children: [
+      {
+        path: "/app/list",
+        name: "AppList",
+        component: () => import("@/views/config/AppList.vue"),
+        meta: {
+          icon: "MessageBox",
+          title: "App列表",
+          activeMenu: "/app",
+          isLink: "",
+          isHide: true,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
+      },
+      {
+        path: "/base/list",
+        name: "BaseList",
+        component: () => import("@/views/config/BaseList.vue"),
+        meta: {
+          icon: "MessageBox",
+          title: "Base列表",
+          activeMenu: "/app",
+          isLink: "",
+          isHide: true,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
+      },
+      {
+        path: "/conf/detail",
+        name: "ConfDetail",
+        component: () => import("@/views/config/ConfDetail.vue"),
+        meta: {
+          icon: "MessageBox",
+          title: "Conf详情",
+          activeMenu: "/app",
+          isLink: "",
+          isHide: true,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
+      },
+    ], // 注意这里要带上 文件后缀.vue
   },
+  // {
+  //   path: "/config",
+  //   name: "config",
+  //   meta: {
+  //     icon: "Operation",
+  //     title: "配置",
+  //     isLink: "",
+  //     isHide: false,
+  //     isFull: false,
+  //     isAffix: false,
+  //     isKeepAlive: true,
+  //   },
+  // },
   {
     path: "/system",
     name: "system",

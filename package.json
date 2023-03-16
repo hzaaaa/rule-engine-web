@@ -13,6 +13,7 @@
     "build:pro": "vite build --mode production"
   },
   "dependencies": {
+    "@antv/g6": "^4.8.7",
     "@antv/x6": "^2.5.5",
     "@element-plus/icons-vue": "^2.0.10",
     "axios": "^1.2.2",

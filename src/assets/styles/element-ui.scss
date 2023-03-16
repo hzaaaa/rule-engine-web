@@ -3,4 +3,11 @@
   .el-menu {
     border-right: none;
   }
+
+  // 表格 pagination 样式
+  .el-pagination {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
 }
