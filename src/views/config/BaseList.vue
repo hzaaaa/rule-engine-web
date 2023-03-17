@@ -1,6 +1,7 @@
 <template>
   <div class="list">
     <div class="list-btn">
+      <el-button @click="router.back()">返回</el-button>
       <el-button @click="openEditDialog('add')">新增</el-button>
       <el-button @click="openImportDialog">导入</el-button>
     </div>

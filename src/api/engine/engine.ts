@@ -1,5 +1,5 @@
 import http from "@/api";
-// import { PORTAuth } from "../config/servicePort";
+import { PORTApp } from "../config/servicePort";
 
 /**
  * @name 获取app列表
@@ -9,7 +9,7 @@ import http from "@/api";
  * @param pageSize: 非必须
  */
 export const getAppListApi = (params?: any) => {
-  return http.get<any>(`/rule-engine-server/app/list`, params);
+  return http.get<any>(PORTApp + `/app/list`, params);
 };
 
 /**
@@ -20,7 +20,7 @@ export const getAppListApi = (params?: any) => {
  * @param info: 非必须，app描述
  */
 export const postAppEditApi = (params?: any) => {
-  return http.post<any>(`/rule-engine-server/app/edit`, params);
+  return http.post<any>(PORTApp + `/app/edit`, params);
   // return http.post(PORTAuth + `/dept/add`);
   // return http.post<Login.ResLogin>(PORT1 + `/dept/add`, params, { headers: { noLoading: true } }); // 正常 post json 请求  ==>  application/json
   // return http.post<Login.ResLogin>(PORT1 + `/dept/add`, {}, { params }); // post 请求携带 query 参数  ==>  ?username=admin&password=123456
@@ -38,7 +38,7 @@ export const postAppEditApi = (params?: any) => {
  * @param pageSize: 非必须
  */
 export const getBaseListApi = (params?: any) => {
-  return http.get<any>(`/rule-engine-server/base/list`, params);
+  return http.get<any>(PORTApp + `/base/list`, params);
 };
 
 /**
@@ -51,7 +51,7 @@ export const getBaseListApi = (params?: any) => {
  * @param priority: 非必须，1，number
  */
 export const postBaseAddApi = (params?: any) => {
-  return http.post<any>(`/rule-engine-server/base/add`, params);
+  return http.post<any>(PORTApp + `/base/add`, params);
 };
 
 /**
@@ -65,7 +65,7 @@ export const postBaseAddApi = (params?: any) => {
  * @param priority: 非必须，1，number
  */
 export const postBaseUpdateApi = (params?: any) => {
-  return http.post<any>(`/rule-engine-server/base/update`, params);
+  return http.post<any>(PORTApp + `/base/update`, params);
 };
 
 /**
@@ -80,7 +80,7 @@ export const postBaseUpdateApi = (params?: any) => {
  */
 /*
 export const postBaseEditApi = (params?: any) => {
-  return http.post<any>(`/rule-engine-server/base/edit`, params);
+  return http.post<any>(PORTApp+`/base/edit`, params);
 };
 */
 
@@ -90,7 +90,7 @@ export const postBaseEditApi = (params?: any) => {
  * @param reason: 非必须，备份原因
  */
 export const getBaseBackupApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/base/backup`, params);
+  return http.get<any>(PORTApp + `/base/backup`, params);
 };
 
 /**
@@ -101,7 +101,7 @@ export const getBaseBackupApi = (params: any) => {
  * @param pageSize: 必须，页大小
  */
 export const getBaseBackupHistoryApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/base/backup/history`, params);
+  return http.get<any>(PORTApp + `/base/backup/history`, params);
 };
 
 /**
@@ -109,7 +109,7 @@ export const getBaseBackupHistoryApi = (params: any) => {
  * @param pushId: 必须，pushId
  */
 export const getBaseBackupDeleteApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/base/backup/delete`, params);
+  return http.get<any>(PORTApp + `/base/backup/delete`, params);
 };
 
 /**
@@ -118,7 +118,7 @@ export const getBaseBackupDeleteApi = (params: any) => {
  * @param pushId: 非必须，pushId
  */
 export const getBaseExportApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/base/export`, params);
+  return http.get<any>(PORTApp + `/base/export`, params);
 };
 
 /**
@@ -126,7 +126,7 @@ export const getBaseExportApi = (params: any) => {
  * @param pushId: 必须，pushId
  */
 export const getBaseRollbackApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/base/rollback`, params);
+  return http.get<any>(PORTApp + `/base/rollback`, params);
 };
 
 /**
@@ -134,7 +134,7 @@ export const getBaseRollbackApi = (params: any) => {
  * @param json: 必须
  */
 export const postBaseImportApi = (params: any) => {
-  return http.post<any>(`/rule-engine-server/base/import`, params);
+  return http.post<any>(PORTApp + `/base/import`, params);
 };
 
 /**
@@ -145,7 +145,7 @@ export const postBaseImportApi = (params: any) => {
  * @param address：必须，server
  */
 export const getConfDetailApi = (params: { appId: number; baseId: number; confId?: number; address: string }) => {
-  return http.get<any>(`/rule-engine-server/conf/detail`, params);
+  return http.get<any>(PORTApp + `/conf/detail`, params);
 };
 
 /**
@@ -154,7 +154,7 @@ export const getConfDetailApi = (params: { appId: number; baseId: number; confId
  * @param type: 必须
  */
 export const getConfLeafApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/conf/leaf/class`, params);
+  return http.get<any>(PORTApp + `/conf/leaf/class`, params);
 };
 
 /**
@@ -164,7 +164,7 @@ export const getConfLeafApi = (params: any) => {
  * @param clazz: 必须
  */
 export const getConfClassCheckApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/conf/class/check`, params);
+  return http.get<any>(PORTApp + `/conf/class/check`, params);
 };
 
 /**
@@ -191,7 +191,7 @@ export const getConfClassCheckApi = (params: any) => {
  * @param moveToNextId: 非必须，移动到的后置ID，number
  */
 export const postConfEditApi = (params: any) => {
-  return http.post<any>(`/rule-engine-server/conf/edit`, params);
+  return http.post<any>(PORTApp + `/conf/edit`, params);
 };
 
 /**
@@ -200,7 +200,7 @@ export const postConfEditApi = (params: any) => {
  * @param baseId: 必须
  */
 export const getConfReleaseApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/conf/release`, params);
+  return http.get<any>(PORTApp + `/conf/release`, params);
 };
 
 /**
@@ -209,5 +209,5 @@ export const getConfReleaseApi = (params: any) => {
  * @param baseId: 必须
  */
 export const getConfUpdateCleanApi = (params: any) => {
-  return http.get<any>(`/rule-engine-server/conf/update_clean`, params);
+  return http.get<any>(PORTApp + `/conf/update_clean`, params);
 };

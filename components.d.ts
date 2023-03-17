@@ -9,6 +9,8 @@ declare module "@vue/runtime-core" {
   export interface GlobalComponents {
     404: typeof import("./src/components/ErrorMessage/404.vue")["default"];
     ElAside: typeof import("element-plus/es")["ElAside"];
+    ElBreadcrumb: typeof import("element-plus/es")["ElBreadcrumb"];
+    ElBreadcrumbItem: typeof import("element-plus/es")["ElBreadcrumbItem"];
     ElButton: typeof import("element-plus/es")["ElButton"];
     ElConfigProvider: typeof import("element-plus/es")["ElConfigProvider"];
     ElContainer: typeof import("element-plus/es")["ElContainer"];
@@ -27,6 +29,7 @@ declare module "@vue/runtime-core" {
     ElMenu: typeof import("element-plus/es")["ElMenu"];
     ElMenuItem: typeof import("element-plus/es")["ElMenuItem"];
     ElOption: typeof import("element-plus/es")["ElOption"];
+    ElOptions: typeof import("element-plus/es")["ElOptions"];
     ElPagination: typeof import("element-plus/es")["ElPagination"];
     ElRadio: typeof import("element-plus/es")["ElRadio"];
     ElRadioButton: typeof import("element-plus/es")["ElRadioButton"];
@@ -38,6 +41,7 @@ declare module "@vue/runtime-core" {
     ElSwitch: typeof import("element-plus/es")["ElSwitch"];
     ElTable: typeof import("element-plus/es")["ElTable"];
     ElTableColumn: typeof import("element-plus/es")["ElTableColumn"];
+    ElUpload: typeof import("element-plus/es")["ElUpload"];
     RouterLink: typeof import("vue-router")["RouterLink"];
     RouterView: typeof import("vue-router")["RouterView"];
   }

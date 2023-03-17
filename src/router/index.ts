@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from "vue-router";
 import Layout from "@/layouts/Layout.vue";
-// import { useAuthStore } from "@/store/auth";
-// import { initDynamicRouter } from "./dynamicRouter";
+import { useAuthStore } from "@/store/auth";
+import { initDynamicRouter } from "./dynamicRouter";
 // import { useGlobalStore } from "@/store";
 
 const routes: RouteRecordRaw[] = [
@@ -26,9 +26,17 @@ const routes: RouteRecordRaw[] = [
     component: () => import("@/views/Login.vue"), // 注意这里要带上 文件后缀.vue
   },
   {
+    path: "/layout",
+    name: "layout",
+    component: Layout,
+    redirect: "/home",
+    children: [],
+  },
+  {
     path: "/404",
     component: () => import("@/components/ErrorMessage/404.vue"),
   },
+
   {
     path: "/system",
     component: Layout,
@@ -55,7 +63,7 @@ const routes: RouteRecordRaw[] = [
       },
     ], // 注意这里要带上 文件后缀.vue
   },
-  // /*
+  /*
   {
     path: "/app",
     name: "App",
@@ -63,7 +71,7 @@ const routes: RouteRecordRaw[] = [
     redirect: "/app/list",
     meta: {
       icon: "MessageBox",
-      title: "配置",
+      title: "规则配置",
       isLink: "",
       isHide: false,
       isFull: false,
@@ -118,8 +126,52 @@ const routes: RouteRecordRaw[] = [
       },
     ], // 注意这里要带上 文件后缀.vue
   },
-  // */
-
+  {
+    path: "/task",
+    name: "Task",
+    component: Layout,
+    redirect: "/task/list",
+    meta: {
+      icon: "MessageBox",
+      title: "任务管理",
+      isLink: "",
+      isHide: false,
+      isFull: false,
+      isAffix: false,
+      isKeepAlive: true,
+    },
+    children: [
+      {
+        path: "/task/list",
+        name: "TaskList",
+        component: () => import("@/views/task/TaskList.vue"),
+        meta: {
+          icon: "Menu",
+          title: "任务列表",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
+      },
+      {
+        path: "/task/submit",
+        name: "TaskSubmit",
+        component: () => import("@/views/task/TaskSubmit.vue"),
+        meta: {
+          icon: "Menu",
+          title: "任务提交",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
+      },
+    ], // 注意这里要带上 文件后缀.vue
+  },
+*/
   // {
   //   path: "/:catchAll(.*)",
   //   component: () => import("@/components/ErrorMessage/404.vue"),
@@ -168,6 +220,14 @@ router.beforeEach(async (to, from, next) => {
     return;
   }
 */
+
+  // 3. 如果没有菜单列表，重新请求菜单列表并添加动态路由（手动刷新、输入地址跳转时）
+  const authStore = useAuthStore();
+  if (!authStore.mockDynamicMenuList.length) {
+    await initDynamicRouter();
+    return next({ ...to, replace: true });
+  }
+
   // 5. 正常访问页面
   next();
 });

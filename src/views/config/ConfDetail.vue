@@ -2,6 +2,7 @@
   <div class="detail">
     <!-- 按钮区 -->
     <div class="btn">
+      <el-button @click="router.back()">返回</el-button>
       <el-button type="primary" @click="release">发布</el-button>
       <el-button type="danger" @click="confUpdateClean">清除</el-button>
       <el-button @click="importJson">导入</el-button>
@@ -33,10 +34,10 @@
       @closed="onEditNodeModalClosed"
     >
       <el-form :model="editNodeModalForm" ref="editNodeModalFormRef">
-        <el-form-item label="名称：" prop="name" :label-width="formLabelWidth" style="width: 80%">
+        <el-form-item label="名称：" prop="name" :label-width="formLabelWidth" style="width: 90%">
           <el-input v-model="editNodeModalForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="时间类型：" prop="timeType" :label-width="formLabelWidth" style="width: 80%">
+        <el-form-item label="时间类型：" prop="timeType" :label-width="formLabelWidth" style="width: 90%">
           <el-select v-model="editNodeModalForm.timeType" @change="nodeTypeChange" style="width: 100%">
             <el-option
               v-for="timeType in timeTypeList"
@@ -51,7 +52,7 @@
           label="开始时间："
           prop="start"
           :label-width="formLabelWidth"
-          style="width: 80%"
+          style="width: 90%"
         >
           <el-date-picker v-model="editNodeModalForm.start" type="datetime" placeholder="请选择日期" />
         </el-form-item>
@@ -60,7 +61,7 @@
           label="结束时间："
           prop="end"
           :label-width="formLabelWidth"
-          style="width: 80%"
+          style="width: 90%"
         >
           <el-date-picker v-model="editNodeModalForm.end" type="datetime" placeholder="请选择日期" />
         </el-form-item>
@@ -76,12 +77,19 @@
             <el-radio :label="0">false</el-radio>
           </el-radio-group>
         </el-form-item>
-        <el-form-item v-if="isLeafNode" label="配置Json：" prop="confField" :label-width="formLabelWidth">
+        <el-form-item
+          v-if="showConf.nodeType === 5 || showConf.nodeType === 6 || showConf.nodeType === 7"
+          label="配置Json："
+          prop="confField"
+          :label-width="formLabelWidth"
+          style="width: 90%"
+        >
           <el-input
             v-model="editNodeModalForm.confField"
             clearable
             type="textarea"
             :autosize="{ minRows: 5, maxRows: 20 }"
+            style="width: 100%"
           ></el-input>
         </el-form-item>
       </el-form>
@@ -99,10 +107,10 @@
       @closed="onAddNodeModalClosed"
     >
       <el-form :model="addNodeModalForm" ref="addNodeModalFormRef">
-        <el-form-item label="名称：" prop="name" :label-width="formLabelWidth" style="width: 80%">
+        <el-form-item label="名称：" prop="name" :label-width="formLabelWidth" style="width: 90%">
           <el-input v-model="addNodeModalForm.name"></el-input>
         </el-form-item>
-        <el-form-item label="nodeType：" prop="nodeType" :label-width="formLabelWidth" style="width: 80%">
+        <el-form-item label="nodeType：" prop="nodeType" :label-width="formLabelWidth" style="width: 90%">
           <el-select v-model="addNodeModalForm.nodeType" @change="nodeTypeChange" style="width: 100%">
             <el-option
               v-for="nodeType in nodeTypeList"
@@ -117,7 +125,7 @@
           prop="relationType"
           v-if="selectedNodeType === 1"
           :label-width="formLabelWidth"
-          style="width: 80%"
+          style="width: 90%"
         >
           <el-select v-model="addNodeModalForm.relationType" style="width: 100%">
             <el-option
@@ -134,7 +142,7 @@
           :label-width="formLabelWidth"
           v-if="selectedNodeType !== 1 && selectedNodeType !== 13"
           @click="getConfClassListOptions"
-          style="width: 80%"
+          style="width: 90%"
         >
           <el-select v-model="addNodeModalForm.confName" style="width: 100%">
             <el-option
@@ -150,7 +158,7 @@
           prop="multiplexIds"
           :label-width="formLabelWidth"
           v-if="selectedNodeType === 13"
-          style="width: 80%"
+          style="width: 90%"
         >
           <el-input v-model="addNodeModalForm.multiplexIds"></el-input>
         </el-form-item>
@@ -159,9 +167,14 @@
           prop="confField"
           :label-width="formLabelWidth"
           v-if="selectedNodeType === 5 || selectedNodeType === 6 || selectedNodeType === 7"
-          style="width: 80%"
+          style="width: 90%"
         >
-          <el-input v-model="addNodeModalForm.confField" type="textarea" :autosize="{ minRows: 5, maxRows: 20 }"></el-input>
+          <el-input
+            v-model="addNodeModalForm.confField"
+            type="textarea"
+            :autosize="{ minRows: 5, maxRows: 20 }"
+            style="width: 100%"
+          ></el-input>
         </el-form-item>
       </el-form>
       <template #footer>
@@ -195,7 +208,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 // import { Graph } from "@antv/x6";
 import G6 from "@antv/g6";
 import {
@@ -211,6 +224,7 @@ import { FormInstance } from "element-plus";
 import { copyTextToClipboard, dateToStr } from "@/utils/util";
 
 const route = useRoute();
+const router = useRouter();
 const { appId, baseId, confId } = route.query;
 
 console.log("route", route.params, appId, baseId, confId);
@@ -362,8 +376,8 @@ const initTree = (treeData: any[]) => {
         },
       },
       layout: {
-        type: "compactBox",
-        direction: "LR",
+        type: "mindmap",
+        direction: "H",
         getId: function getId(d: any) {
           return d.id;
         },
@@ -373,7 +387,21 @@ const initTree = (treeData: any[]) => {
         getHGap: function getHGap() {
           return 120;
         },
+        getSide: () => "right",
       },
+      // layout: {
+      //   type: "compactBox",
+      //   direction: "LR",
+      //   getId: function getId(d: any) {
+      //     return d.id;
+      //   },
+      //   getVGap: function getVGap() {
+      //     return 10;
+      //   },
+      //   getHGap: function getHGap() {
+      //     return 120;
+      //   },
+      // },
     });
 
     graph.node((node: any) => {
@@ -576,6 +604,9 @@ const editNodeModalForm = reactive({
 });
 */
 const openEditModal = (timetype: number) => {
+  console.log("showConf", showConf.value);
+  console.log("showConf", selectedNode.value);
+
   showOperation.value = false;
   timeType.value = timetype;
   editNodeModalVisible.value = true;
@@ -585,7 +616,7 @@ const openEditModal = (timetype: number) => {
   editNodeModalForm.end = selectedNode.value.end;
   editNodeModalForm.debug = showConf.value.debug || 1;
   editNodeModalForm.inverse = showConf.value.inverse || 0;
-  // editNodeModalForm.confField = showConf.value.confField;
+  editNodeModalForm.confField = showConf.value.confField;
 };
 const openAddNodeModal = (type: "child" | "front" = "child") => {
   showOperation.value = false;
@@ -767,7 +798,6 @@ const nodeTypeChange = (type: number) => {
   if (type !== selectedNodeType.value) addNodeModalForm.confName = "";
   selectedNodeType.value = type;
   if (type !== 1 && type !== 13) {
-    console.log(" todo ,调用 config/getClass 接口请求");
     getConfLeafApi({ appId, type: selectedNodeType.value }).then((res) => {
       console.log("getConfLeafApi", res.data);
       confClassList.value = res.data;

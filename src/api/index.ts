@@ -59,6 +59,10 @@ class RequestHttp {
      */
     this.service.interceptors.response.use(
       (response: AxiosResponse) => {
+        // 下载文件格式时，为了取到响应头中的文件名，直接返回response
+        if (response.headers["content-disposition"]) {
+          return response;
+        }
         const { data } = response;
         const globalStore = useGlobalStore();
         if (data.code == ResultEnum.OVERDUE) {

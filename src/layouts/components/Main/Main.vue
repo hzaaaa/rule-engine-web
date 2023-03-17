@@ -40,6 +40,7 @@ onBeforeUnmount(() => {
   padding: 10px 12px;
   background-color: #f0f2f5;
   &::-webkit-scrollbar {
+    width: 2px;
     background-color: #f0f2f5;
   }
 }

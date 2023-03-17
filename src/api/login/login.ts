@@ -1,5 +1,7 @@
 import http from "@/api";
 import { PORTAuth } from "../config/servicePort";
+import DynamicRouter from "@/assets/json/dynamicRouter.json";
+
 // * 登录模块 interface
 export namespace Login {
   export interface ReqLoginForm {
@@ -45,4 +47,11 @@ export const getAuthButtonListApi = () => {
  */
 export const logoutApi = () => {
   return http.post(PORTAuth + `/auth/logout`);
+};
+
+// * 获取菜单列表
+export const getMockDynamicRouterApi = () => {
+  // return http.get<Menu.MenuOptions[]>(PORTAuth + `/menu/list`, {}, { headers: { noLoading: true } });
+  // 如果想让菜单变为本地数据，注释上一行代码，并引入本地 dynamicRouter.json 数据
+  return DynamicRouter;
 };

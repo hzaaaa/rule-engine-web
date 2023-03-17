@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
-import { getShowMenuList, getRouterMenuList } from "@/utils/util";
-import { getAuthButtonListApi } from "@/api/login/login";
+import { getShowMenuList, getRouterMenuList, getAllBreadcrumbList, getFlatArr, getGeekerAdminShowMenuList } from "@/utils/util";
+import { getAuthButtonListApi, getMockDynamicRouterApi } from "@/api/login/login";
 
 // AuthStore 菜单、权限相关存储
 export const useAuthStore = defineStore({
@@ -12,6 +12,8 @@ export const useAuthStore = defineStore({
     authMenuList: <any[]>[],
     // 按钮权限列表
     authButtonList: <string[]>[],
+    // 模拟数据：动态路由
+    mockDynamicMenuList: <Menu.MenuOptions[]>[],
   }),
   getters: {
     // 后端返回的原始菜单列表
@@ -24,6 +26,12 @@ export const useAuthStore = defineStore({
     authMenuListGet: (state) => state.authMenuList,
     // 按钮权限列表
     authButtonListGet: (state) => state.authButtonList,
+    // 模拟数据：扁平化之后的一维数组路由，主要用来添加动态路由
+    flatMenuListGet: (state) => getFlatArr(state.mockDynamicMenuList),
+    // 模拟数据：所有面包屑导航列表
+    breadcrumbListGet: (state) => getAllBreadcrumbList(state.mockDynamicMenuList),
+    // 模拟数据：所有面包屑导航列表 ==> 左侧菜单栏渲染，需要去除 isHide == true
+    mockShowMenuListGet: (state) => getGeekerAdminShowMenuList(state.mockDynamicMenuList),
   },
   actions: {
     // 获取按钮权限列表
@@ -39,6 +47,11 @@ export const useAuthStore = defineStore({
     // 设置动态路由
     async setAuthMenuList(menuList: any) {
       this.authMenuList = menuList;
+    },
+    // 模拟数据：获取模拟动态路由
+    async getMockDynamicRouter() {
+      const { data } = await getMockDynamicRouterApi();
+      this.mockDynamicMenuList = data;
     },
   },
   persist: { key: "AuthState", storage: window.localStorage, paths: ["authOriginMenuList", "authButtonList"] },

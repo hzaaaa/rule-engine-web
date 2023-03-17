@@ -20,7 +20,7 @@ export const useGlobalStore = defineStore({
       // 折叠菜单
       isCollapse: false,
       // 面包屑导航
-      breadcrumb: false,
+      breadcrumb: true,
       // 面包屑导航图标
       breadcrumbIcon: true,
     },

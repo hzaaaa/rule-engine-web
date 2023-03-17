@@ -4,7 +4,7 @@
       <div class="menu" :style="{ width: isCollapse ? '65px' : '210px' }">
         <div class="logo flx-center">
           <img src="@/assets/images/logo.svg" alt="logo" />
-          <span v-show="!isCollapse" @click="test">RuleEngine</span>
+          <span v-show="!isCollapse">RuleEngine</span>
         </div>
         <el-scrollbar>
           <el-menu
@@ -17,7 +17,7 @@
             text-color="#bdbdc0"
             active-text-color="#ffffff"
           >
-            <SubMenu :menuList="showMenuList" />
+            <SubMenu :menuList="mockMenuList" />
           </el-menu>
         </el-scrollbar>
       </div>
@@ -40,16 +40,18 @@ import Main from "@/layouts/components/Main/Main.vue";
 import ToolBarLeft from "@/layouts/components/Header/ToolBarLeft.vue";
 import ToolBarRight from "@/layouts/components/Header/ToolBarRight.vue";
 import SubMenu from "@/layouts/components/Menu/SubMenu.vue";
-import { getGeekerAdminShowMenuList } from "@/utils/util";
+// import { getGeekerAdminShowMenuList } from "@/utils/util";
+import { useAuthStore } from "@/store/auth";
 
 const route = useRoute();
+const authStore = useAuthStore();
 const globalStore = useGlobalStore();
 const isCollapse = computed(() => globalStore.themeConfig.isCollapse);
 const activeMenu = computed(() => (route.meta.activeMenu ? route.meta.activeMenu : route.path));
-const test = () => {
-  console.log("test", route.meta);
-};
-const showMenuList = computed(() => getGeekerAdminShowMenuList(menuList));
+// const showMenuList = computed(() => getGeekerAdminShowMenuList(menuList));
+const mockMenuList = computed(() => authStore.mockShowMenuListGet);
+
+/*
 const menuList = [
   {
     path: "/app",
@@ -57,7 +59,7 @@ const menuList = [
     redirect: "/app/list",
     meta: {
       icon: "MessageBox",
-      title: "配置",
+      title: "规则配置",
       isLink: "",
       isHide: false,
       isFull: false,
@@ -112,19 +114,50 @@ const menuList = [
       },
     ], // 注意这里要带上 文件后缀.vue
   },
-  // {
-  //   path: "/config",
-  //   name: "config",
-  //   meta: {
-  //     icon: "Operation",
-  //     title: "配置",
-  //     isLink: "",
-  //     isHide: false,
-  //     isFull: false,
-  //     isAffix: false,
-  //     isKeepAlive: true,
-  //   },
-  // },
+  {
+    path: "/task",
+    name: "Task",
+    redirect: "/task/list",
+    meta: {
+      icon: "MessageBox",
+      title: "任务管理",
+      isLink: "",
+      isHide: false,
+      isFull: false,
+      isAffix: false,
+      isKeepAlive: true,
+    },
+    children: [
+      {
+        path: "/task/list",
+        name: "TaskList",
+        component: () => import("@/views/task/TaskList.vue"),
+        meta: {
+          icon: "Menu",
+          title: "任务列表",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
+      },
+      {
+        path: "/task/submit",
+        name: "TaskSubmit",
+        component: () => import("@/views/task/TaskSubmit.vue"),
+        meta: {
+          icon: "Menu",
+          title: "任务提交",
+          isLink: "",
+          isHide: false,
+          isFull: false,
+          isAffix: false,
+          isKeepAlive: true,
+        },
+      },
+    ], // 注意这里要带上 文件后缀.vue
+  },
   {
     path: "/system",
     name: "system",
@@ -175,7 +208,7 @@ const menuList = [
           icon: "Menu",
           title: "角色管理",
           isLink: "",
-          isHide: true,
+          isHide: false,
           isFull: false,
           isAffix: false,
           isKeepAlive: true,
@@ -198,6 +231,7 @@ const menuList = [
     ],
   },
 ];
+*/
 </script>
 
 <style scoped lang="scss">

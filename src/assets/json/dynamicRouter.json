@@ -1,0 +1,98 @@
+{
+  "code": 200,
+  "msg": "成功",
+  "data": [
+    {
+      "path": "/app/list",
+      "name": "AppList",
+      "component": "/config/AppList",
+      "meta": {
+        "icon": "MessageBox",
+        "title": "规则配置",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": false,
+        "isKeepAlive": true
+      },
+      "children": [
+        {
+          "path": "/base/list",
+          "name": "BaseList",
+          "component": "/config/BaseList",
+          "meta": {
+            "icon": "MessageBox",
+            "title": "Base列表",
+            "activeMenu": "/app/list",
+            "isLink": "",
+            "isHide": true,
+            "isFull": false,
+            "isAffix": false,
+            "isKeepAlive": true
+          },
+          "children": [
+            {
+              "path": "/conf/detail",
+              "name": "ConfDetail",
+              "component": "/config/ConfDetail",
+              "meta": {
+                "icon": "MessageBox",
+                "title": "Conf详情",
+                "activeMenu": "/app/list",
+                "isLink": "",
+                "isHide": true,
+                "isFull": false,
+                "isAffix": false,
+                "isKeepAlive": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "path": "/task",
+      "name": "Task",
+      "redirect": "/task/list",
+      "meta": {
+        "icon": "MessageBox",
+        "title": "任务管理",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": false,
+        "isKeepAlive": true
+      },
+      "children": [
+        {
+          "path": "/task/list",
+          "name": "TaskList",
+          "component": "/task/TaskList",
+          "meta": {
+            "icon": "Menu",
+            "title": "任务列表",
+            "isLink": "",
+            "isHide": false,
+            "isFull": false,
+            "isAffix": false,
+            "isKeepAlive": true
+          }
+        },
+        {
+          "path": "/task/submit",
+          "name": "TaskSubmit",
+          "component": "/task/TaskSubmit",
+          "meta": {
+            "icon": "Menu",
+            "title": "任务提交",
+            "isLink": "",
+            "isHide": false,
+            "isFull": false,
+            "isAffix": false,
+            "isKeepAlive": true
+          }
+        }
+      ]
+    }
+  ]
+}
