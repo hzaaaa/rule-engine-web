@@ -149,12 +149,21 @@ export const getConfDetailApi = (params: { appId: number; baseId: number; confId
 };
 
 /**
- * @name 获取confName
+ * @name 获取confLeafClass
  * @param appId: 必须
  * @param type: 必须
  */
 export const getConfLeafApi = (params: any) => {
   return http.get<any>(PORTApp + `/conf/leaf/class`, params);
+};
+
+/**
+ * @name 获取confLeafClassInfo 添加，修改节点时会根据返回的结果来动态展示输入框
+ * @param appId: 必须
+ * @param type: 必须
+ */
+export const getConfLeafInfoApi = (params: any) => {
+  return http.get<any>(PORTApp + `/conf/leaf/class/info`, params);
 };
 
 /**

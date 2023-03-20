@@ -38,7 +38,7 @@
           <el-input v-model="editNodeModalForm.name"></el-input>
         </el-form-item>
         <el-form-item label="时间类型：" prop="timeType" :label-width="formLabelWidth" style="width: 90%">
-          <el-select v-model="editNodeModalForm.timeType" @change="nodeTypeChange" style="width: 100%">
+          <el-select v-model="editNodeModalForm.timeType" @change="onNodeTypeChange" style="width: 100%">
             <el-option
               v-for="timeType in timeTypeList"
               :key="timeType.id"
@@ -111,7 +111,7 @@
           <el-input v-model="addNodeModalForm.name"></el-input>
         </el-form-item>
         <el-form-item label="nodeType：" prop="nodeType" :label-width="formLabelWidth" style="width: 90%">
-          <el-select v-model="addNodeModalForm.nodeType" @change="nodeTypeChange" style="width: 100%">
+          <el-select v-model="addNodeModalForm.nodeType" @change="onNodeTypeChange" style="width: 100%">
             <el-option
               v-for="nodeType in nodeTypeList"
               :key="nodeType.id"
@@ -141,15 +141,14 @@
           prop="confName"
           :label-width="formLabelWidth"
           v-if="selectedNodeType !== 1 && selectedNodeType !== 13"
-          @click="getConfClassListOptions"
           style="width: 90%"
         >
-          <el-select v-model="addNodeModalForm.confName" style="width: 100%">
+          <el-select v-model="addNodeModalForm.confName" @change="onConfNameChange" style="width: 100%">
             <el-option
               v-for="confClass in confClassList"
-              :key="confClass.shortName"
-              :label="confClass.shortName"
-              :value="confClass.fullName"
+              :key="confClass.name"
+              :label="confClass.name"
+              :value="confClass.clazz"
             ></el-option>
           </el-select>
         </el-form-item>
@@ -163,6 +162,16 @@
           <el-input v-model="addNodeModalForm.multiplexIds"></el-input>
         </el-form-item>
         <el-form-item
+          :label="`${field.desc}：`"
+          :prop="field.field"
+          v-for="field in confFieldsList"
+          :key="field.field"
+          :label-width="formLabelWidth"
+          style="width: 90%"
+        >
+          <el-input v-model="dynamicForm[field.field]" :placeholder="`请输入 ${field.type} 格式`"></el-input>
+        </el-form-item>
+        <!-- <el-form-item
           label="配置Json："
           prop="confField"
           :label-width="formLabelWidth"
@@ -175,7 +184,7 @@
             :autosize="{ minRows: 5, maxRows: 20 }"
             style="width: 100%"
           ></el-input>
-        </el-form-item>
+        </el-form-item> -->
       </el-form>
       <template #footer>
         <el-button @click="cancleAddNodeModal">取消</el-button>
@@ -213,7 +222,7 @@ import { useRoute, useRouter } from "vue-router";
 import G6 from "@antv/g6";
 import {
   getConfDetailApi,
-  getConfLeafApi,
+  getConfLeafInfoApi,
   postConfEditApi,
   getConfReleaseApi,
   getConfUpdateCleanApi,
@@ -496,7 +505,7 @@ const bindEvents = () => {
       ...model,
       id: model.id,
       x: point.x + 30,
-      y: point.y + 105,
+      y: point.y + 60,
     };
     showOperation.value = true;
     console.log("modal", selectedNode.value);
@@ -592,17 +601,10 @@ const timeTypeList = [
   { name: "小于结束时间", id: 6 },
   { name: "在开始时间与结束时间之内", id: 7 },
 ];
-/*
-const editNodeModalForm = reactive({
-  name: "",
-  timeType: selectedNode.value.timeType || 1,
-  start: <Date | null>null,
-  end: <Date | null>null,
-  debug: 1,
-  inverse: 0,
-  confField: "",
-});
-*/
+
+const confFieldsList = ref<any[]>([]); // 添加节点时的动态输入框列表
+const dynamicForm = ref<any>({}); // 添加节点时动态输入框绑定值
+
 const openEditModal = (timetype: number) => {
   console.log("showConf", showConf.value);
   console.log("showConf", selectedNode.value);
@@ -700,7 +702,6 @@ const editNodeModalForm = reactive({
 });
 const editNodeModalFormRef = ref<FormInstance>();
 const submitEditNodeModal = () => {
-  console.log("submitAddNodeModal", editNodeModalForm);
   if ((editNodeModalForm.timeType === 5 || editNodeModalForm.timeType === 7) && !editNodeModalForm.start) {
     ElMessage.warning("请选择开始时间");
     return;
@@ -753,7 +754,6 @@ const addNodeModalForm = reactive({ name: "", nodeType: 1, relationType: 1, conf
 const addNodeModalFormRef = ref<FormInstance>();
 const formLabelWidth = "160px";
 const submitAddNodeModal = () => {
-  console.log("submitAddNodeModal", addNodeModalForm);
   let params = <any>{
     appId,
     baseId,
@@ -770,14 +770,14 @@ const submitAddNodeModal = () => {
   // }
   if (addNodeModalForm.nodeType === 5 || addNodeModalForm.nodeType === 6 || addNodeModalForm.nodeType === 7) {
     if (addNodeModalForm.confName) params.confName = addNodeModalForm.confName;
-    if (addNodeModalForm.confField) params.confField = addNodeModalForm.confField;
+    // if (addNodeModalForm.confField) params.confField = addNodeModalForm.confField;
+    if (Object.keys(dynamicForm.value).length) params.confField = JSON.stringify(dynamicForm.value);
   }
   if (addNodeModalForm.nodeType === 13) {
     if (addNodeModalForm.multiplexIds) params.multiplexIds = addNodeModalForm.multiplexIds;
   }
   if (params.nodeType === 1) params.nodeType = addNodeModalForm.relationType;
   // if (params.nodeType === 8) delete params.nodeType;
-  console.log("todo , 用params调接口", params);
 
   addNodeModalVisible.value = false;
   postConfEditApi(params).then((res) => {
@@ -792,20 +792,27 @@ const cancleAddNodeModal = () => {
 };
 const onAddNodeModalClosed = () => {
   addNodeModalFormRef.value?.resetFields();
+  confFieldsList.value.length = 0;
+  dynamicForm.value = {};
 };
-const nodeTypeChange = (type: number) => {
-  console.log("nodeTypeChange");
-  if (type !== selectedNodeType.value) addNodeModalForm.confName = "";
+const onNodeTypeChange = (type: number) => {
+  console.log("onNodeTypeChange");
+  if (type !== selectedNodeType.value) {
+    addNodeModalForm.confName = "";
+    confFieldsList.value.length = 0;
+    dynamicForm.value = {};
+  }
   selectedNodeType.value = type;
   if (type !== 1 && type !== 13) {
-    getConfLeafApi({ appId, type: selectedNodeType.value }).then((res) => {
-      console.log("getConfLeafApi", res.data);
+    getConfLeafInfoApi({ appId, type: selectedNodeType.value }).then((res) => {
       confClassList.value = res.data;
     });
   }
 };
-const getConfClassListOptions = () => {
-  console.log("getConfClassListOptions");
+const onConfNameChange = (val: any) => {
+  confFieldsList.value = confClassList.value.find((conf) => conf.clazz === val)?.fields;
+  dynamicForm.value = {};
+  confFieldsList.value.forEach((conf) => (dynamicForm.value[conf.field] = ""));
 };
 </script>
 
