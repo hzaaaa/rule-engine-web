@@ -5,3 +5,6 @@ public/*
 
 /node_modules/**
 /.nuxt/*
+
+auto-imports.d.ts
+components.d.ts

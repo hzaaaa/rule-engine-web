@@ -718,7 +718,6 @@ const submitEditNodeModal = () => {
     debug: editNodeModalForm.debug,
     inverse: editNodeModalForm.inverse,
   };
-  if (showConf.value.confField) params.confField = showConf.value.confField;
   if (showConf.value.confName) params.confName = showConf.value.confName;
   if (showConf.value.nodeType) params.nodeType = showConf.value.nodeType;
   if (selectedNode.value.parentId) params.parentId = selectedNode.value.parentId;
@@ -727,6 +726,7 @@ const submitEditNodeModal = () => {
   if (editNodeModalForm.timeType) params.timeType = editNodeModalForm.timeType;
   if (editNodeModalForm.start) params.start = dateToStr(editNodeModalForm.start);
   if (editNodeModalForm.end) params.end = dateToStr(editNodeModalForm.end);
+  if (editNodeModalForm.confField) params.confField = editNodeModalForm.confField;
 
   editNodeModalVisible.value = false;
   postConfEditApi(params).then((res) => {
