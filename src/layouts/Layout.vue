@@ -3,7 +3,7 @@
     <el-aside>
       <div class="menu" :style="{ width: isCollapse ? '65px' : '210px' }">
         <div class="logo flx-center">
-          <img src="@/assets/images/logo.svg" alt="logo" />
+          <img src="@/assets/icons/wykj-favicon.ico" alt="logo" />
           <span v-show="!isCollapse">RuleEngine</span>
         </div>
         <el-scrollbar>
@@ -260,14 +260,15 @@ const menuList = [
         border-bottom: 1px solid #282a35;
         height: 55px;
         span {
+          line-height: 32px;
           font-weight: bold;
-          font-size: 21.5px;
+          font-size: 22px;
           color: #dadada;
           white-space: nowrap;
         }
         img {
-          margin-right: 6px;
-          width: 28px;
+          margin-right: 8px;
+          width: 32px;
           object-fit: contain;
         }
       }
