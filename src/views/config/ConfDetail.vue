@@ -243,8 +243,10 @@ console.log("route", route.params, appId, baseId, confId);
  */
 const release = () => {
   getConfReleaseApi({ appId, baseId }).then((res) => {
-    if (res.code === 200) ElMessage.success("success");
-    else ElMessage.error(res.msg);
+    if (res.code === 200) {
+      ElMessage.success("success");
+      refreshGraph();
+    } else ElMessage.error(res.msg);
   });
 };
 const confUpdateClean = () => {
