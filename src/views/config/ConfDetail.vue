@@ -7,6 +7,7 @@
       <el-button type="danger" @click="confUpdateClean">清除</el-button>
       <el-button @click="importJson">导入</el-button>
       <el-button @click="exportJson">导出</el-button>
+      <el-button @click="downloadImage">下载图片</el-button>
     </div>
     <div id="container"></div>
 
@@ -273,6 +274,16 @@ const exportJson = () => {
   });
   exportVisible.value = true;
 };
+const downloadImage = () => {
+  graph.downloadFullImage(undefined, undefined, {
+    backgroundColor: "#eeeeee",
+    padding: 20,
+  });
+  // graph.toFullDataURL((res) => console.log(res), undefined, {
+  //   backgroundColor: "#eeeeee",
+  //   padding: 20,
+  // });
+};
 
 /**
  * 导入 弹窗
@@ -369,7 +380,14 @@ const initTree = (treeData: any[]) => {
       width,
       height,
       modes: {
-        default: ["drag-canvas", "zoom-canvas"],
+        default: [
+          {
+            type: "collapse-expand",
+            trigger: "click",
+          },
+          "drag-canvas",
+          "zoom-canvas",
+        ],
       },
       defaultNode: {
         anchorPoints: [
@@ -495,8 +513,9 @@ const bindEvents = () => {
     if (!ev.item || ev.item._cfg.type !== "node") showOperation.value = false;
   });
   // 监听 node 上面 mouse 事件
-  graph.on("node:click", (evt: any) => {
-    const { item } = evt;
+  graph.on("node:contextmenu", (evt: any) => {
+    const { item, originalEvent } = evt;
+    originalEvent.preventDefault();
     const model = item.getModel();
     // console.log("model", model);
     const { x, y } = model;
@@ -510,7 +529,7 @@ const bindEvents = () => {
       y: point.y + 60,
     };
     showOperation.value = true;
-    console.log("modal", selectedNode.value);
+    // console.log("modal", selectedNode.value);
   });
 };
 const refreshGraph = () => {
@@ -819,9 +838,12 @@ const onConfNameChange = (val: any) => {
 </script>
 
 <style scoped lang="scss">
+.detail {
+  height: 100%;
+}
 #container {
   width: 100%;
-  height: 700px;
+  height: calc(100% - 40px);
 }
 // 节点操作区
 .operation-container {
