@@ -368,11 +368,164 @@ const isLeafNode = computed(() => {
   return showConf.value.nodeType === 5 || showConf.value.nodeType === 6 || showConf.value.nodeType === 7;
 });
 
+/**
+ * 自定义节点
+ */
+const registerFn = () => {
+  G6.registerNode(
+    "circle-plus",
+    {
+      draw(cfg: any, group: any) {
+        console.log("node.cgf", cfg);
+        const circle = group.addShape("circle", {
+          attrs: {
+            fill: "pink",
+            stroke: "#999",
+            x: 0,
+            y: 0,
+            r: 16,
+            cursor: "pointer",
+          },
+          name: "circle-shape",
+        });
+        group.addShape("text", {
+          attrs: {
+            text: cfg.label,
+            x: 20,
+            y: 0,
+            textBaseline: "middle",
+            fill: "#111",
+          },
+          name: "text-shape",
+        });
+
+        if (cfg.children && cfg.children.length) {
+          group.addShape("marker", {
+            attrs: {
+              x: 0,
+              y: 0,
+              r: 8,
+              symbol: cfg.collapsed ? G6.Marker.expand : G6.Marker.collapse,
+              stroke: "#666",
+              lineWidth: 1,
+              cursor: "pointer",
+            },
+            name: "collapse-icon",
+          });
+        }
+        return circle;
+      },
+    },
+    "circle"
+  );
+  G6.registerNode(
+    "rect-plus",
+    {
+      draw(cfg: any, group: any) {
+        console.log("node.cgf", cfg);
+        const rect = group.addShape("rect", {
+          attrs: {
+            fill: "skyblue",
+            stroke: "#999",
+            x: 0,
+            y: 0,
+            width: 32,
+            height: 32,
+            cursor: "pointer",
+          },
+          name: "rect-shape",
+        });
+        group.addShape("text", {
+          attrs: {
+            text: cfg.label,
+            x: 40,
+            y: 8,
+            textBaseline: "middle",
+            fill: "#111",
+          },
+          name: "text-shape",
+        });
+
+        if (cfg.children && cfg.children.length) {
+          group.addShape("marker", {
+            attrs: {
+              x: 48,
+              y: 24,
+              r: 8,
+              symbol: cfg.collapsed ? G6.Marker.expand : G6.Marker.collapse,
+              stroke: "#666",
+              lineWidth: 1,
+              cursor: "pointer",
+            },
+            name: "collapse-icon",
+          });
+        }
+        return rect;
+      },
+    },
+    "rect"
+  );
+  G6.registerNode(
+    "diamond-plus",
+    {
+      draw(cfg: any, group: any) {
+        console.log("node.cfg", cfg);
+        const diamond = group.addShape("polygon", {
+          attrs: {
+            points: [
+              [0, 20],
+              [20, 0],
+              [40, 20],
+              [20, 40],
+            ],
+            fill: "gold",
+            stroke: "#999",
+            cursor: "pointer",
+          },
+          name: "polygon-shape",
+        });
+
+        // /*
+        group.addShape("text", {
+          attrs: {
+            text: cfg.label,
+            x: 36,
+            y: 16,
+            textBaseline: "middle",
+            fill: "#111",
+          },
+          name: "text-shape",
+        });
+
+        if (cfg.children && cfg.children.length) {
+          group.addShape("marker", {
+            attrs: {
+              x: 16,
+              y: 16,
+              r: 8,
+              symbol: cfg.collapsed ? G6.Marker.expand : G6.Marker.collapse,
+              stroke: "#666",
+              lineWidth: 1,
+              cursor: "pointer",
+            },
+            name: "collapse-icon",
+          });
+        }
+        // */
+        return diamond;
+      },
+    },
+    "diamond"
+  );
+};
+registerFn();
+
 let graph: any = null;
+let container: any = null;
 let createRoot = false;
 const initTree = (treeData: any[]) => {
   if (!graph) {
-    const container = document.getElementById("container");
+    container = document.getElementById("container");
     const width = container?.scrollWidth;
     const height = container?.scrollHeight || 500;
     graph = new G6.TreeGraph({
@@ -383,7 +536,12 @@ const initTree = (treeData: any[]) => {
         default: [
           {
             type: "collapse-expand",
-            trigger: "click",
+            /*
+            onChange(item: any, collapsed) {
+              const icon = item.get("group").find((e: any) => e.get("name") === "collapse-icon");
+              icon.attr("symbol", collapsed ? G6.Marker.expand : G6.Marker.collapse);
+            },
+            */
           },
           "drag-canvas",
           "zoom-canvas",
