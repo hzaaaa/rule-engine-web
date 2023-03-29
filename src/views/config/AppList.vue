@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getAppListApi, postAppEditApi } from "@/api/engine/engine";
+import { getAppListApi, postAppAddApi } from "@/api/engine/engine";
 
 const router = useRouter();
 
@@ -59,12 +59,16 @@ const dialogFormVisible = ref(false);
 const form = reactive({ name: "", info: "" });
 const formLabelWidth = "100px";
 const submit = () => {
-  console.log("submit");
+  if (!form.name) {
+    ElMessage.warning("请输入名称");
+    return;
+  }
   dialogFormVisible.value = false;
-  let params = <any>{};
-  if (form.name) params.name = form.name;
+  let params = <any>{
+    name: form.name,
+  };
   if (form.info) params.info = form.info;
-  postAppEditApi(params).then((res) => {
+  postAppAddApi(params).then((res) => {
     if (res.code === 200) {
       ElMessage.success("success");
       getAppListApi().then((res) => {
