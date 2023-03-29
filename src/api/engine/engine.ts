@@ -13,14 +13,32 @@ export const getAppListApi = (params?: any) => {
 };
 
 /**
- * @name 新增/编辑app
+ * @name 新增/编辑app (已废弃)
  * @param id: 非必须，新建不传，编辑必传
  * @param status: 非必须，默认为true，删除时只需填 id 和 status=false
  * @param name: 非必须，app名称
  * @param info: 非必须，app描述
  */
+/*
 export const postAppEditApi = (params?: any) => {
   return http.post<any>(PORTApp + `/app/edit`, params);
+  // return http.post(PORTAuth + `/dept/add`);
+  // return http.post<Login.ResLogin>(PORT1 + `/dept/add`, params, { headers: { noLoading: true } }); // 正常 post json 请求  ==>  application/json
+  // return http.post<Login.ResLogin>(PORT1 + `/dept/add`, {}, { params }); // post 请求携带 query 参数  ==>  ?username=admin&password=123456
+  // return http.post<Login.ResLogin>(PORT1 + `/dept/add`, qs.stringify(params)); // post 请求携带表单参数  ==>  application/x-www-form-urlencoded
+  // return http.get<Login.ResLogin>(PORT1 + `/dept/add?${qs.stringify(params, { arrayFormat: "repeat" })}`); // 如果是 get 请求可以携带数组等复杂参数
+};
+*/
+
+/**
+ * @name 新增app
+ * @param id: 非必须，新建不传，编辑必传
+ * @param status: 非必须，默认为true，删除时只需填 id 和 status=false
+ * @param name: 必须，app名称
+ * @param info: 非必须，app描述
+ */
+export const postAppAddApi = (params?: any) => {
+  return http.post<any>(PORTApp + `/app/add`, params);
   // return http.post(PORTAuth + `/dept/add`);
   // return http.post<Login.ResLogin>(PORT1 + `/dept/add`, params, { headers: { noLoading: true } }); // 正常 post json 请求  ==>  application/json
   // return http.post<Login.ResLogin>(PORT1 + `/dept/add`, {}, { params }); // post 请求携带 query 参数  ==>  ?username=admin&password=123456

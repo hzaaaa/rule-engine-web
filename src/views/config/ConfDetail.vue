@@ -950,7 +950,19 @@ const submitAddNodeModal = () => {
   if (addNodeModalForm.nodeType === 5 || addNodeModalForm.nodeType === 6 || addNodeModalForm.nodeType === 7) {
     if (addNodeModalForm.confName) params.confName = addNodeModalForm.confName;
     // if (addNodeModalForm.confField) params.confField = addNodeModalForm.confField;
-    if (Object.keys(dynamicForm.value).length) params.confField = JSON.stringify(dynamicForm.value);
+    if (Object.keys(dynamicForm.value).length) {
+      let res = <any>{};
+      Object.keys(dynamicForm.value).forEach((key: any) => {
+        if (dynamicForm.value[key]) {
+          try {
+            res[key] = JSON.parse(dynamicForm.value[key]);
+          } catch (error) {
+            res[key] = dynamicForm.value[key];
+          }
+        }
+      });
+      params.confField = JSON.stringify(res);
+    }
   }
   if (addNodeModalForm.nodeType === 13) {
     if (addNodeModalForm.multiplexIds) params.multiplexIds = addNodeModalForm.multiplexIds;
