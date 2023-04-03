@@ -14,7 +14,8 @@
   },
   "dependencies": {
     "@antv/g6": "^4.8.7",
-    "@antv/x6": "^2.5.5",
+    "@antv/layout": "^0.3.13",
+    "@antv/x6": "^1.33.1",
     "@element-plus/icons-vue": "^2.0.10",
     "axios": "^1.2.2",
     "element-plus": "^2.2.28",

@@ -93,6 +93,20 @@
           }
         }
       ]
+    },
+    {
+      "path": "/x6",
+      "name": "X6",
+      "component": "/x6/X6",
+      "meta": {
+        "icon": "MessageBox",
+        "title": "X6 Demo",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": false,
+        "isKeepAlive": true
+      }
     }
   ]
 }
