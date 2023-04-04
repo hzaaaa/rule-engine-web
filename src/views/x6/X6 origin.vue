@@ -8,11 +8,8 @@
     </div>
     <div class="right">
       <div id="form">
-        <el-input v-model="mockJson" style="width: 200px" type="textarea" :autosize="{ minRows: 5, maxRows: 10 }"></el-input>
-        <br />
         <el-button @click="toJSON">序列化</el-button>
         <el-button @click="fromJSON">反序列化</el-button>
-        <el-button @click="initTree">initTree</el-button>
         <el-row style="margin-top: 20px">
           <div class="label">节点类型：</div>
           <el-select disabled v-model="type" style="margin-right: 12px; width: 200px">
@@ -25,7 +22,7 @@
         </el-row>
         <el-row>
           <div class="label">表达式：</div>
-          <el-input v-model="expression" style="width: 200px" type="textarea" :autosize="{ minRows: 10, maxRows: 30 }"></el-input>
+          <el-input v-model="expression" style="width: 200px"></el-input>
         </el-row>
         <el-button @click="saveInfo">保存</el-button>
       </div>
@@ -36,8 +33,6 @@
 <script setup lang="ts">
 import { Graph, Shape, Addon } from "@antv/x6";
 import { onMounted, ref } from "vue";
-import mockTreeDataResult from "./mock.json";
-import Hierarchy from "@antv/hierarchy";
 
 let graph: any = null;
 let container: any = null;
@@ -57,13 +52,8 @@ const initGraph = (data: any) => {
     // 鼠标滚轮行为
     mousewheel: {
       enabled: true,
-      minScale: 0.2,
+      minScale: 0.5,
       maxScale: 3,
-    },
-    scroller: {
-      enabled: true,
-      pannable: true,
-      modifiers: "ctrl",
     },
     // 连线风格
     connecting: {
@@ -472,15 +462,15 @@ const data = {
 };
 
 const bindEvents = () => {
-  graph.on("node:click", ({ node }: any) => {
-    // console.log("e", e);
-    // console.log("x", x);
-    // console.log("y", y);
+  graph.on("node:click", ({ e, x, y, node }: any) => {
+    console.log("e", e);
+    console.log("x", x);
+    console.log("y", y);
     console.log("node", node.data);
     if (node.data) {
-      type.value = node.data.showConf.nodeType;
-      name.value = node.data.showConf.labelName;
-      expression.value = node.data.showConf.confField;
+      type.value = node.data.type;
+      name.value = node.data.name;
+      expression.value = node.data.expression;
     }
   });
   graph.on("blank:click", () => {
@@ -756,167 +746,6 @@ const saveInfo = () => {
     name: name.value,
     expression: expression.value,
   };
-};
-
-/**
- * 导入树形结构数据测试
- */
-console.log("mockTreeDataResult", mockTreeDataResult);
-// 将 ice 数据结构里的 forward 添加到 children 里
-const forwardToChildren = (detailsData: any) => {
-  if (detailsData) {
-    const { root = <any>[] } = detailsData || {};
-    const createTreeData = (data: any[] = []): any => {
-      if (data.length === 0) {
-        return [];
-      }
-      return data.map((da: any) => {
-        const daItem = { ...da };
-        const children = daItem.children ? [...daItem.children] : [];
-        if (daItem.forward) {
-          children.unshift({ ...daItem.forward, isNotChildren: true });
-        }
-        daItem.children = children;
-        return {
-          ...daItem,
-          children: createTreeData(daItem.children),
-        };
-      });
-    };
-    if (!root.children) root.children = [];
-    const rootChildren = root.forward ? [{ ...root.forward, isNotChildren: true }, ...root.children] : [...root.children];
-    return {
-      ...root,
-      children: createTreeData(rootChildren),
-    };
-  } else {
-    return {
-      children: [],
-      showConf: {},
-    };
-  }
-};
-const mockTreeData = forwardToChildren(mockTreeDataResult.data);
-
-const mockJson = ref("");
-let treeData = ref<any>();
-const initTree = () => {
-  if (mockJson.value) {
-    treeData.value = forwardToChildren(JSON.parse(mockJson.value).data);
-    layoutTree();
-    return;
-  }
-  treeData.value = mockTreeData || {
-    id: "" + new Date().getTime(),
-    children: [],
-    type: 1,
-    data: {
-      name: "初始化",
-      height: 40,
-    },
-  };
-
-  layoutTree();
-};
-const layoutTree = () => {
-  console.log("treeData", treeData.value);
-
-  const result = Hierarchy.mindmap(treeData.value, {
-    direction: "H",
-    getId: function getId(d: any) {
-      return d.id;
-    },
-    getVGap: function getVGap() {
-      return 20;
-    },
-    getHGap: function getHGap() {
-      return 200;
-    },
-    getSide: () => "right",
-  });
-
-  console.log("result", result);
-
-  const model = { nodes: <any>[], edges: <any>[] };
-  // 将树形结构转为平级结构
-  const traverse = (data: any) => {
-    if (data) {
-      model.nodes.push({
-        id: data.data.showConf.nodeId,
-        x: data.x + 700,
-        y: data.y + 200,
-        shape: "rect",
-        label: data.data.showConf.labelName,
-        data: data.data,
-        width: 300,
-        height: 40,
-        ports: {
-          groups: {
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 6,
-                  magnet: true,
-                  stroke: "skyblue",
-                  strokeWidth: 2,
-                  fill: "#ffffff",
-                  // stroke: "transparent",
-                  // strokeWidth: 0,
-                  // fill: "transparent",
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 6,
-                  magnet: true,
-                  stroke: "gray",
-                  strokeWidth: 2,
-                  fill: "#ffffff",
-                },
-              },
-            },
-          },
-          items: [
-            {
-              id: `left-${data.data.showConf.nodeId}`,
-              group: "left", // 指定分组名称
-            },
-            {
-              id: `right-${data.data.showConf.nodeId}`,
-              group: "right", // 指定分组名称
-            },
-          ],
-        },
-      });
-    }
-    if (data.children) {
-      data.children.forEach((item: any) => {
-        model.edges.push({
-          source: { cell: data.data.showConf.nodeId, port: "right-" + data.data.showConf.nodeId },
-          target: { cell: item.data.showConf.nodeId, port: "left-" + item.data.showConf.nodeId },
-          shape: "edge",
-          attrs: {
-            line: {
-              stroke: "#A2B1C3",
-              targetMarker: {
-                height: 8,
-                width: 12,
-                name: "block",
-              },
-            },
-          },
-        });
-        traverse(item);
-      });
-    }
-  };
-  traverse(result);
-  console.log("model", model);
-  graph.fromJSON(model);
 };
 </script>
 
