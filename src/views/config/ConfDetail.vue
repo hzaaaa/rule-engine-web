@@ -9,7 +9,41 @@
       <el-button @click="exportJson">导出</el-button>
       <el-button @click="downloadImage">下载图片</el-button>
     </div>
-    <div id="container"></div>
+    <div class="box">
+      <!-- 节点详情区 -->
+      <div class="left">
+        <el-row v-if="currentNode">
+          <div class="label">名称：</div>
+          <div>{{ currentNode.nodeName }}</div>
+        </el-row>
+        <el-row v-if="currentNode">
+          <div class="label">节点类型：</div>
+          <div>{{ currentNode.nodeType }}</div>
+        </el-row>
+      </div>
+      <div id="container"></div>
+      <!-- 叶子节点区 -->
+      <div class="right">
+        <div v-for="child in childNodes" :key="child.id">
+          <el-card class="card">
+            <template #header>
+              <div class="card-header">
+                <span>Card Name</span>
+                <el-button>按钮</el-button>
+              </div>
+            </template>
+            <el-row>
+              <div class="label">节点类型：</div>
+              <div>{{ child.showConf.nodeType }}</div>
+            </el-row>
+            <el-row>
+              <div class="label">节点名称：</div>
+              <div>{{ child.showConf.nodeName }}</div>
+            </el-row>
+          </el-card>
+        </div>
+      </div>
+    </div>
 
     <div class="operation-container" v-if="showOperation" :style="`top: ${selectedNode.y}px; left: ${selectedNode.x}px`">
       <div class="operation-item" @click="openEditModal(selectedNode.timeType || 1)">
@@ -534,15 +568,15 @@ const initTree = (treeData: any[]) => {
       height,
       modes: {
         default: [
+          /*
           {
             type: "collapse-expand",
-            /*
             onChange(item: any, collapsed) {
               const icon = item.get("group").find((e: any) => e.get("name") === "collapse-icon");
               icon.attr("symbol", collapsed ? G6.Marker.expand : G6.Marker.collapse);
             },
-            */
           },
+          */
           "drag-canvas",
           "zoom-canvas",
         ],
@@ -560,6 +594,10 @@ const initTree = (treeData: any[]) => {
         type: "cubic-horizontal",
         style: {
           stroke: "#CFCFCF",
+          endArrow: {
+            path: "M 0,0 L 16,4 L 16,-4 Z",
+            fill: "#cfcfcf",
+          },
         },
       },
       layout: {
@@ -666,8 +704,6 @@ const getStyle = (type: number) => {
 const bindEvents = () => {
   // 点击 canvas 空白处，关闭节点操作区
   graph.on("click", (ev: any) => {
-    // console.log("click", ev);
-    // showOperation.value = false;
     if (!ev.item || ev.item._cfg.type !== "node") showOperation.value = false;
   });
   // 监听 node 上面 mouse 事件
@@ -688,6 +724,15 @@ const bindEvents = () => {
     };
     showOperation.value = true;
     // console.log("modal", selectedNode.value);
+  });
+  // 左键单击节点时
+  graph.on("node:click", (evt: any) => {
+    const { item } = evt;
+    const model = item.getModel();
+    // console.log("evt", evt);
+    console.log("model", model);
+    currentNode.value = model.showConf;
+    childNodes.value = model.children;
   });
 };
 const refreshGraph = () => {
@@ -1005,15 +1050,43 @@ const onConfNameChange = (val: any) => {
   dynamicForm.value = {};
   confFieldsList.value.forEach((conf) => (dynamicForm.value[conf.field] = ""));
 };
+
+/**
+ * 叶子节点区
+ */
+const currentNode = ref<any>();
+
+/**
+ * 节点详情区
+ */
+const childNodes = ref<any[]>([]);
 </script>
 
 <style scoped lang="scss">
 .detail {
+  position: relative;
   height: 100%;
+}
+.box {
+  display: flex;
+  margin-top: 8px;
+  height: calc(100% - 40px);
+  background-color: #ffffff;
+  .left {
+    flex-shrink: 0;
+    padding: 4px;
+    border-right: 1px solid #eeeeee;
+    width: 20%;
+  }
+  .right {
+    flex-shrink: 0;
+    padding: 4px;
+    border-left: 1px solid #eeeeee;
+    width: 30%;
+  }
 }
 #container {
   width: 100%;
-  height: calc(100% - 40px);
 }
 // 节点操作区
 .operation-container {
