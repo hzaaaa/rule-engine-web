@@ -12,35 +12,145 @@
     <div class="box">
       <!-- 节点详情区 -->
       <div class="left">
-        <el-row v-if="currentNode">
-          <div class="label">名称：</div>
-          <div>{{ currentNode.nodeName }}</div>
-        </el-row>
-        <el-row v-if="currentNode">
-          <div class="label">节点类型：</div>
-          <div>{{ currentNode.nodeType }}</div>
-        </el-row>
+        <div class="info">
+          <h4>节点信息</h4>
+          <el-row v-if="currentNodeConf">
+            <div class="label">节点ID：</div>
+            <div>{{ currentNodeConf.nodeId }}</div>
+          </el-row>
+          <el-row v-if="currentNodeConf">
+            <div class="label">节点名称：</div>
+            <div>{{ currentNodeConf.nodeName }}</div>
+          </el-row>
+          <el-row v-if="currentNodeConf">
+            <div class="label">节点类型：</div>
+            <div>{{ currentNodeConf.nodeType }}</div>
+          </el-row>
+          <el-row v-if="currentNodeConf?.confField">
+            <div class="label">配置JSON：</div>
+            <el-input v-model="currentNodeConf.confField" type="textarea" :autosize="{ minRows: 5, maxRows: 10 }"></el-input>
+          </el-row>
+        </div>
+        <div class="operation">
+          <div v-if="isOperationButtonsVisible" class="operation-btns">
+            <el-button @click="showAddNodeModel('child')" v-if="!isCurrentLeafNode" :disabled="!currentNodeModel" round
+              >添加子节点</el-button
+            >
+            <el-button @click="showAddNodeModel('front')" v-if="!currentNodeModel?.forward" :disabled="!currentNodeModel" round
+              >添加前置节点</el-button
+            >
+            <el-button @click="showAddNodeModel('exchange')" :disabled="!currentNodeModel" round>节点转换</el-button>
+            <el-button @click="deleteCurrentNode" :disabled="!currentNodeModel" round plain type="danger">删除本节点</el-button>
+          </div>
+          <div v-else>
+            <h4>{{ operationTitle }}</h4>
+            <el-scrollbar style="height: calc(100% - 48px)">
+              <el-row>
+                <div class="label">名称：</div>
+                <el-input v-model="addNodeModelForm.name"></el-input>
+              </el-row>
+              <el-row>
+                <div class="label">nodeType：</div>
+                <el-select v-model="addNodeModelForm.nodeType" @change="onNodeTypeChangeNew" style="width: 100%">
+                  <el-option
+                    v-for="nodeType in nodeTypeList"
+                    :key="nodeType.id"
+                    :label="nodeType.name"
+                    :value="nodeType.id"
+                  ></el-option>
+                </el-select>
+              </el-row>
+              <el-row v-if="selectedNodeType === 1">
+                <div class="label">relationType：</div>
+                <el-select v-model="addNodeModelForm.relationType" style="width: 100%">
+                  <el-option
+                    v-for="relationType in relationTypeList"
+                    :key="relationType.id"
+                    :label="relationType.name"
+                    :value="relationType.id"
+                  ></el-option>
+                </el-select>
+              </el-row>
+              <el-row v-if="selectedNodeType !== 1 && selectedNodeType !== 13">
+                <div class="label">confName：</div>
+                <el-select v-model="addNodeModelForm.confName" @change="onConfNameChange" style="width: 100%">
+                  <el-option
+                    v-for="confClass in confClassList"
+                    :key="confClass.name"
+                    :label="confClass.name"
+                    :value="confClass.clazz"
+                  ></el-option>
+                </el-select>
+              </el-row>
+              <el-row v-if="selectedNodeType === 13">
+                <div class="label">节点ID(逗号分隔)：</div>
+                <el-input v-model="addNodeModelForm.multiplexIds"></el-input>
+              </el-row>
+              <el-row v-for="field in confFieldsList" :key="field.field">
+                <div class="label">{{ `${field.desc}：` }}</div>
+                <el-input v-model="dynamicForm[field.field]" :placeholder="`请输入 ${field.type} 格式`"></el-input>
+              </el-row>
+              <el-button @click="cancleAddNodeModel" size="small">取消</el-button>
+              <el-button @click="submitAddNodeModel" type="primary" size="small">确定</el-button>
+            </el-scrollbar>
+          </div>
+        </div>
       </div>
       <div id="container"></div>
       <!-- 叶子节点区 -->
       <div class="right">
-        <div v-for="child in childNodes" :key="child.id">
-          <el-card class="card">
-            <template #header>
-              <div class="card-header">
-                <span>Card Name</span>
-                <el-button>按钮</el-button>
-              </div>
-            </template>
-            <el-row>
-              <div class="label">节点类型：</div>
-              <div>{{ child.showConf.nodeType }}</div>
-            </el-row>
-            <el-row>
-              <div class="label">节点名称：</div>
-              <div>{{ child.showConf.nodeName }}</div>
-            </el-row>
-          </el-card>
+        <el-scrollbar>
+          <div v-for="child in childNodes" :key="child.id">
+            <el-card class="card" shadow="hover" @click="consoleChild(child)">
+              <template #header>
+                <div class="card-header">
+                  <span>{{ child.showConf.nodeName }}</span>
+                  <div>
+                    <el-button type="primary" size="small" v-if="child?.showConf?.confField" @click="submitEditChildNode(child)"
+                      >保存</el-button
+                    >
+                    <el-button type="danger" size="small" @click="deleteChildNode(child)">删除</el-button>
+                  </div>
+                </div>
+              </template>
+              <el-row>
+                <div class="label">节点ID：</div>
+                <div>{{ child.showConf.nodeId }}</div>
+              </el-row>
+              <el-row>
+                <div class="label">节点类型：</div>
+                <div>{{ child.showConf.nodeType }}</div>
+              </el-row>
+              <el-row v-if="child?.showConf?.confField">
+                <div class="label">配置JSON：</div>
+                <el-input v-model="child.showConf.confField" type="textarea" :autosize="{ minRows: 5, maxRows: 20 }"></el-input>
+              </el-row>
+            </el-card>
+          </div>
+        </el-scrollbar>
+      </div>
+      <!-- 图例 -->
+      <div class="legend">
+        <div class="legend-title">图例</div>
+        <div class="legend-item">
+          <div class="legend-item-none"></div>
+          <div class="legend-item-notes">根节点</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-item-and"></div>
+          <div class="legend-item-notes">AND节点</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-item-true"></div>
+          <div class="legend-item-notes">TRUE节点</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-item-all"></div>
+          <div class="legend-item-notes">ALL节点</div>
+        </div>
+        <div class="legend-item">
+          <div class="legend-item-any"></div>
+          <div class="legend-item-notes">ANY节点</div>
         </div>
       </div>
     </div>
@@ -351,45 +461,6 @@ const onExportClosed = () => {
 /**
  * 画布区
  */
-/*
-const data = {
-  // 节点
-  nodes: [
-    {
-      id: "node1", // String，可选，节点的唯一标识
-      x: 40, // Number，必选，节点位置的 x 值
-      y: 40, // Number，必选，节点位置的 y 值
-      width: 80, // Number，可选，节点大小的 width 值
-      height: 40, // Number，可选，节点大小的 height 值
-      label: "hello", // String，节点标签
-    },
-    {
-      id: "node2", // String，节点的唯一标识
-      x: 160, // Number，必选，节点位置的 x 值
-      y: 180, // Number，必选，节点位置的 y 值
-      width: 80, // Number，可选，节点大小的 width 值
-      height: 40, // Number，可选，节点大小的 height 值
-      label: "world", // String，节点标签
-    },
-  ],
-  // 边
-  edges: [
-    {
-      source: "node1", // String，必须，起始节点 id
-      target: "node2", // String，必须，目标节点 id
-      connector: { name: "smooth" },
-    },
-  ],
-};
-onMounted(() => {
-  const graph = new Graph({
-    container: document.getElementById("AntVContainer")!,
-    width: 1000,
-    height: 800,
-  });
-  graph.fromJSON(data);
-});
-*/
 const addr = ref("server");
 const selectedNode = ref<any>({});
 const showOperation = ref(false);
@@ -400,6 +471,10 @@ const showConf = computed(() => {
 });
 const isLeafNode = computed(() => {
   return showConf.value.nodeType === 5 || showConf.value.nodeType === 6 || showConf.value.nodeType === 7;
+});
+const isCurrentLeafNode = computed(() => {
+  if (!currentNodeConf.value) return false;
+  return currentNodeConf.value.nodeType === 5 || currentNodeConf.value.nodeType === 6 || currentNodeConf.value.nodeType === 7;
 });
 
 /**
@@ -557,6 +632,50 @@ registerFn();
 let graph: any = null;
 let container: any = null;
 let createRoot = false;
+/**
+ * 图例，未生效
+ */
+/*
+const legendData = {
+  nodes: [
+    {
+      id: "type1",
+      label: "根节点",
+      order: 4,
+      // type: "circle",
+      // color: "#FFFACD",
+      // stroke: "#EEAD0E",
+      // size: [30, 30],
+      type: "circle",
+      size: 5,
+      style: {
+        fill: "#5B8FF9",
+      },
+    },
+    {
+      id: "type2",
+      label: "ALL节点",
+      order: 3,
+      // type: "rect",
+      // color: "#aee8f8",
+      // stroke: "#2ab5c9",
+      // size: [26, 26],
+      type: "circle",
+      size: 20,
+      style: {
+        fill: "#5AD8A6",
+      },
+    },
+  ],
+};
+const legend = new G6.Legend({
+  data: legendData,
+  align: "center",
+  layout: "horizontal", // vertical
+  position: "bottom-right",
+  title: "图例",
+});
+*/
 const initTree = (treeData: any[]) => {
   if (!graph) {
     container = document.getElementById("container");
@@ -595,7 +714,7 @@ const initTree = (treeData: any[]) => {
         style: {
           stroke: "#CFCFCF",
           endArrow: {
-            path: "M 0,0 L 16,4 L 16,-4 Z",
+            path: "M 0,0 L 10,3 L 10,-3 Z",
             fill: "#cfcfcf",
           },
         },
@@ -614,6 +733,7 @@ const initTree = (treeData: any[]) => {
         },
         getSide: () => "right",
       },
+      // plugins: [legend],
       // layout: {
       //   type: "compactBox",
       //   direction: "LR",
@@ -664,14 +784,48 @@ const initTree = (treeData: any[]) => {
   }
 };
 const getStyle = (type: number) => {
-  if (type <= 4) {
+  if (type === 0) {
+    // 根节点
     return {
       type: "circle",
       color: "#FFFACD",
       stroke: "#EEAD0E",
       size: [30, 30],
     };
+  } else if (type === 1) {
+    // AND
+    return {
+      type: "diamond",
+      color: "#F7B7B5",
+      stroke: "#f38f8c",
+      size: [31, 31],
+    };
+  } else if (type === 2) {
+    // TRUE
+    return {
+      type: "diamond",
+      color: "#FFBC95",
+      stroke: "#f79d69",
+      size: [31, 31],
+    };
+  } else if (type === 3) {
+    // ALL
+    return {
+      type: "rect",
+      color: "#aee8f8",
+      stroke: "#2ab5c9",
+      size: [26, 26],
+    };
+  } else if (type === 4) {
+    // ANY
+    return {
+      type: "triangle",
+      color: "#c3ffb8",
+      stroke: "#91d9ba",
+      size: [16, 16],
+    };
   } else if (type === 5) {
+    // FLOW 节点，叶子节点，已不再显示
     return {
       type: "diamond",
       color: "#C1FFC1",
@@ -679,6 +833,7 @@ const getStyle = (type: number) => {
       size: [31, 31],
     };
   } else if (type === 6) {
+    // Result 节点，叶子节点，已不再显示
     return {
       type: "rect",
       color: "#C1FFC1",
@@ -686,11 +841,52 @@ const getStyle = (type: number) => {
       size: [26, 26],
     };
   } else if (type === 7) {
+    // None 节点，叶子节点已不再显示
     return {
       type: "triangle",
       color: "#C1FFC1",
       stroke: "#00CD00",
       size: [16, 16],
+    };
+  } else if (type === 8) {
+    // P_None 节点
+    return {
+      type: "circle",
+      color: "#C9D8DF",
+      stroke: "#98bccd",
+      size: [30, 30],
+    };
+  } else if (type === 9) {
+    // P_AND
+    return {
+      type: "circle",
+      color: "#B2DEE1",
+      stroke: "#6dacb0",
+      size: [30, 30],
+    };
+  } else if (type === 10) {
+    // P_TRUE
+    return {
+      type: "circle",
+      color: "#F7E6D6",
+      stroke: "#d7bea7",
+      size: [30, 30],
+    };
+  } else if (type === 11) {
+    // P_ALL
+    return {
+      type: "circle",
+      color: "#4CB19C",
+      stroke: "#13878b",
+      size: [30, 30],
+    };
+  } else if (type === 12) {
+    // P_ANY
+    return {
+      type: "circle",
+      color: "#D25B85",
+      stroke: "#d02561",
+      size: [30, 30],
     };
   } else {
     return {
@@ -705,6 +901,12 @@ const bindEvents = () => {
   // 点击 canvas 空白处，关闭节点操作区
   graph.on("click", (ev: any) => {
     if (!ev.item || ev.item._cfg.type !== "node") showOperation.value = false;
+    if (!ev.item || ev.item._cfg.type !== "node") {
+      currentNodeModel.value = null;
+      currentNodeConf.value = null;
+      childNodes.value = [];
+      cancleAddNodeModel();
+    }
   });
   // 监听 node 上面 mouse 事件
   graph.on("node:contextmenu", (evt: any) => {
@@ -730,17 +932,25 @@ const bindEvents = () => {
     const { item } = evt;
     const model = item.getModel();
     // console.log("evt", evt);
-    console.log("model", model);
-    currentNode.value = model.showConf;
-    childNodes.value = model.children;
+    // console.log("model", model);
+    // 切换节点时，需要先清空当前节点信息
+    if (model?.showConf?.nodeId !== currentNodeConf?.value?.nodeId) {
+      cancleAddNodeModel();
+    }
+    currentNodeModel.value = model;
+    currentNodeConf.value = model.showConf;
+    childNodes.value = [...model.leafNodes, ...model.children];
   });
 };
 const refreshGraph = () => {
+  // 每次刷新图后，清空当前节点的信息
+  currentNodeConf.value = null;
+  currentNodeModel.value = null;
+  childNodes.value = [];
   getConfDetailApi({ appId: Number(appId), baseId: Number(baseId), address: "server" }).then((res) => {
     console.log("getConfDetailApi", res.data);
     jsonToGraph(res.data);
   });
-  // jsonToGraph(detailData3);
 };
 const jsonToGraph = (detailsData: any) => {
   if (detailsData) {
@@ -750,10 +960,10 @@ const jsonToGraph = (detailsData: any) => {
       graph = null;
     }
     const { root = <any>[] } = detailsData || {};
+    console.log("1-root", root);
+    /*
     const createTreeData = (data: any[] = []): any => {
-      if (data.length === 0) {
-        return [];
-      }
+      if (data.length === 0) return [];
       return data.map((da: any) => {
         const daItem = { ...da };
         const children = daItem.children ? [...daItem.children] : [];
@@ -768,13 +978,39 @@ const jsonToGraph = (detailsData: any) => {
         };
       });
     };
+    */
+    const filterLeaveAndChildren = (children: any[] = []) => {
+      if (!children.length) return {};
+      const _leave = <any>[];
+      const _children = <any>[];
+      children.forEach((child: any) => {
+        if ([5, 6, 7].includes(child.showConf.nodeType)) {
+          _leave.push({ ...child });
+        } else {
+          const childCopy = { ...child };
+          const subChildren = childCopy.children ? [...childCopy.children] : [];
+          if (childCopy.forward) {
+            subChildren.unshift({ ...childCopy.forward, isNotChildren: true });
+          }
+          const res = filterLeaveAndChildren(subChildren);
+          childCopy.leafNodes = res.leafNodes ?? [];
+          childCopy.children = res.children ?? [];
+          _children.push(childCopy);
+        }
+      });
+      return { leafNodes: _leave, children: _children };
+    };
+
     if (!root.children) root.children = [];
     const rootChildren = root.forward ? [{ ...root.forward, isNotChildren: true }, ...root.children] : [...root.children];
 
+    const res = filterLeaveAndChildren(rootChildren);
     const treeData = {
       ...root,
-      children: createTreeData(rootChildren),
+      leafNodes: res.leafNodes,
+      children: res.children,
     };
+    console.log("2-treeData", treeData);
 
     initTree(treeData);
   } else {
@@ -1052,14 +1288,166 @@ const onConfNameChange = (val: any) => {
 };
 
 /**
- * 叶子节点区
- */
-const currentNode = ref<any>();
-
-/**
  * 节点详情区
  */
 const childNodes = ref<any[]>([]);
+const isOperationButtonsVisible = ref(true);
+const addNodeModelType = ref("child");
+const operationTitle = ref("添加子节点");
+const addNodeModelFormOrigin = { name: "", nodeType: 1, relationType: 1, confName: "", multiplexIds: "", confField: "" };
+const addNodeModelForm = reactive({ name: "", nodeType: 1, relationType: 1, confName: "", multiplexIds: "", confField: "" });
+
+const showAddNodeModel = (type: "child" | "front" | "exchange" = "child") => {
+  addNodeModelType.value = type;
+  operationTitle.value = type === "child" ? "添加子节点" : type === "front" ? "添加前置节点" : "节点转换";
+  isOperationButtonsVisible.value = false;
+  selectedNodeType.value = 1;
+  if (type === "exchange") {
+    console.log("节点转换\n", currentNodeConf.value);
+    addNodeModelForm.name = currentNodeConf.value.nodeName;
+    if (currentNodeConf.value.nodeType === 0) {
+      addNodeModalForm.nodeType = 1;
+      addNodeModalForm.relationType = 7;
+    } else {
+      addNodeModelForm.nodeType = 1;
+      addNodeModelForm.relationType = currentNodeConf.value.nodeType;
+    }
+  }
+};
+const cancleAddNodeModel = () => {
+  addNodeModelType.value = "";
+  isOperationButtonsVisible.value = true;
+  // 取消时，还原 addNodeModelForm 为初始值，清空变量现有值
+  Object.assign(addNodeModelForm, addNodeModelFormOrigin);
+  confFieldsList.value.length = 0;
+  dynamicForm.value = {};
+};
+const submitAddNodeModel = () => {
+  let params = <any>{
+    appId,
+    baseId,
+    editType: addNodeModelType.value === "child" ? 1 : addNodeModelType.value === "exchange" ? 5 : 4,
+    selectId: currentNodeConf.value.nodeId,
+  };
+  if (currentNodeModel.value.parentId) params.parentId = currentNodeModel.value.parentId;
+  if (currentNodeModel.value.nextId) params.nextId = currentNodeModel.value.nextId;
+  if (currentNodeModel.value.index) params.index = currentNodeModel.value.index;
+  if (addNodeModelForm.name) params.name = addNodeModelForm.name;
+  if (addNodeModelForm.nodeType) params.nodeType = addNodeModelForm.nodeType;
+  if (addNodeModelForm.nodeType === 5 || addNodeModelForm.nodeType === 6 || addNodeModelForm.nodeType === 7) {
+    if (addNodeModelForm.confName) params.confName = addNodeModelForm.confName;
+    if (Object.keys(dynamicForm.value).length) {
+      let res = <any>{};
+      Object.keys(dynamicForm.value).forEach((key: any) => {
+        if (dynamicForm.value[key]) {
+          try {
+            res[key] = JSON.parse(dynamicForm.value[key]);
+          } catch (error) {
+            res[key] = dynamicForm.value[key];
+          }
+        }
+      });
+      params.confField = JSON.stringify(res);
+    }
+  }
+  if (addNodeModelForm.nodeType === 13) {
+    if (addNodeModelForm.multiplexIds) params.multiplexIds = addNodeModelForm.multiplexIds;
+  }
+  if (params.nodeType === 1) params.nodeType = addNodeModelForm.relationType;
+
+  isOperationButtonsVisible.value = true;
+  postConfEditApi(params).then((res) => {
+    if (res.code === 200) {
+      ElMessage.success("success");
+      refreshGraph();
+      // 添加结束时，还原 addNodeModelForm 为初始值，清空变量现有值
+      Object.assign(addNodeModelForm, addNodeModelFormOrigin);
+      confFieldsList.value.length = 0;
+      dynamicForm.value = {};
+    }
+  });
+};
+const deleteCurrentNode = () => {
+  ElMessageBox.confirm(`确认删除<${currentNodeConf.value.labelName}>节点吗？`, "", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+  })
+    .then(async () => {
+      await postConfEditApi({
+        appId,
+        baseId,
+        editType: 3,
+        selectId: currentNodeConf.value.nodeId,
+        parentId: currentNodeModel.value.parentId,
+        nextId: currentNodeModel.value.nextId,
+        index: currentNodeModel.value.index,
+      });
+      ElMessage.success("删除成功");
+      refreshGraph();
+    })
+    .catch((err) => {
+      console.error("postConfEditApi 错误", err);
+    });
+};
+const onNodeTypeChangeNew = (type: number) => {
+  if (type !== selectedNodeType.value) {
+    addNodeModelForm.confName = "";
+    confFieldsList.value.length = 0;
+    dynamicForm.value = {};
+  }
+  selectedNodeType.value = type;
+  if (type !== 1 && type !== 13) {
+    getConfLeafInfoApi({ appId, type: selectedNodeType.value }).then((res) => {
+      confClassList.value = res.data;
+    });
+  }
+};
+
+/**
+ * 叶子节点区
+ */
+const currentNodeModel = ref<any>(); // 当前节点的 model 信息(包含 conf 信息)
+const currentNodeConf = ref<any>(); // 当前节点的 conf 信息
+const consoleChild = (child: any) => {
+  console.log("consoleChild", child);
+};
+const submitEditChildNode = (child: any) => {
+  let params = <any>{
+    appId,
+    baseId,
+    editType: 2,
+    selectId: child.showConf.nodeId,
+  };
+  if (child.showConf.confField) params.confField = child.showConf.confField;
+  postConfEditApi(params).then((res) => {
+    if (res.code === 200) {
+      ElMessage.success("success");
+      refreshGraph();
+    }
+  });
+};
+const deleteChildNode = (child: any) => {
+  ElMessageBox.confirm(`确认删除<${child.showConf.labelName}>节点吗？`, "", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+  })
+    .then(async () => {
+      await postConfEditApi({
+        appId,
+        baseId,
+        editType: 3,
+        selectId: child.showConf.nodeId,
+        parentId: child.parentId,
+        nextId: child.nextId,
+        index: child.index,
+      });
+      ElMessage.success("删除成功");
+      refreshGraph();
+    })
+    .catch((err) => {
+      console.error("postConfEditApi 错误", err);
+    });
+};
 </script>
 
 <style scoped lang="scss">
@@ -1069,23 +1457,157 @@ const childNodes = ref<any[]>([]);
 }
 .box {
   display: flex;
+  position: relative;
   margin-top: 8px;
   height: calc(100% - 40px);
   background-color: #ffffff;
   .left {
+    display: flex;
+    flex-direction: column;
     flex-shrink: 0;
     padding: 4px;
     border-right: 1px solid #eeeeee;
     width: 20%;
+    h4 {
+      margin: 0;
+      height: 40px;
+      line-height: 40px;
+    }
+    .el-row {
+      margin-bottom: 4px;
+    }
+    .label {
+      font-size: 14px;
+      color: #333333;
+    }
+    .info {
+      flex-shrink: 0;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #eeeeee;
+      min-height: 200px;
+    }
+    .operation {
+      overflow: hidden;
+      flex: 1;
+      padding-top: 8px;
+      &-btns {
+        display: flex;
+        flex-direction: column;
+        button {
+          margin-left: 0;
+          margin-bottom: 16px;
+        }
+      }
+    }
   }
   .right {
+    overflow: hidden;
     flex-shrink: 0;
-    padding: 4px;
-    border-left: 1px solid #eeeeee;
+    padding: 8px;
+    border-left: 1px solid #dddddd;
     width: 30%;
+    // background-color: #eeeeee;
+    .card {
+      margin-bottom: 12px;
+      background-color: rgb(255 255 255 / 50%);
+      font-size: 14px;
+      color: #333333;
+      &-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        span {
+          font-weight: 700;
+        }
+      }
+      :deep(.el-card__header) {
+        padding-top: 8px;
+        padding-bottom: 8px;
+      }
+    }
+  }
+  .legend {
+    position: absolute;
+    left: 21%;
+    top: 0;
+    box-sizing: border-box;
+    padding: 4px;
+    border: 1px solid #eeeeee;
+    width: 120px;
+    height: 200px;
+    background-color: #ffffff;
+    color: #333333;
+    &-title {
+      margin: 12px 0;
+      text-align: center;
+    }
+    &-item {
+      display: flex;
+      margin-bottom: 8px;
+      font-size: 14px;
+      &-notes {
+        margin-left: 8px;
+      }
+      &-none {
+        box-sizing: border-box;
+        border: 1px solid #eead0e;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        background-color: #fffacd;
+      }
+      &-and {
+        box-sizing: border-box;
+        border: 1px solid #f38f8c;
+        width: 16px;
+        height: 16px;
+        background-color: #f7b7b5;
+        transform: translateX(2px) rotate(45deg);
+      }
+      &-true {
+        box-sizing: border-box;
+        border: 1px solid #f79d69;
+        width: 16px;
+        height: 16px;
+        background-color: #ffbc95;
+        transform: translateX(2px) rotate(45deg);
+      }
+      &-all {
+        box-sizing: border-box;
+        border: 1px solid #2ab5c9;
+        width: 20px;
+        height: 20px;
+        background-color: #aee8f8;
+      }
+      &-any {
+        position: relative;
+        box-sizing: border-box;
+        border: 20px solid #91d9ba;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-top: 0;
+        width: 20px;
+        height: 20px;
+        &::before {
+          position: absolute;
+          left: 0;
+          top: 0;
+          box-sizing: border-box;
+          border: 18px solid #c3ffb8;
+          border-left: 9px solid transparent;
+          border-right: 9px solid transparent;
+          border-top: 0;
+          width: 18px;
+          height: 18px;
+          content: "";
+          transform: translateX(-9px) translateY(1px);
+        }
+      }
+    }
   }
 }
 #container {
+  position: relative;
   width: 100%;
 }
 // 节点操作区
@@ -1123,5 +1645,25 @@ const childNodes = ref<any[]>([]);
 }
 .el-textarea {
   width: 90%;
+
+  /* 滚动条整体 */
+  ::-webkit-scrollbar {
+    border-right: 1px solid #eeeeee;
+    width: 6px;
+    background-color: #ffffff;
+  }
+
+  /* 滚动条轨道 */
+  ::-webkit-scrollbar-track {
+    border-radius: 10px;
+    background-color: #f6f6f6;
+  }
+
+  /* 滚动条滑块 */
+  ::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background-color: #e4e4e4;
+    cursor: pointer;
+  }
 }
 </style>
