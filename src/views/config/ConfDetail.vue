@@ -832,96 +832,120 @@ const getStyle = (type: number) => {
     // AND
     return {
       type: "diamond",
-      color: "#F7B7B5",
-      stroke: "#f38f8c",
+      // color: "#F7B7B5",
+      // stroke: "#f38f8c",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [31, 31],
     };
   } else if (type === 2) {
     // TRUE
     return {
       type: "diamond",
-      color: "#FFBC95",
-      stroke: "#f79d69",
-      size: [31, 31],
+      // color: "#FFBC95",
+      // stroke: "#f79d69",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
+      size: [30, 20],
     };
   } else if (type === 3) {
     // ALL
     return {
       type: "rect",
-      color: "#aee8f8",
-      stroke: "#2ab5c9",
+      // color: "#aee8f8",
+      // stroke: "#2ab5c9",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [26, 26],
     };
   } else if (type === 4) {
     // ANY
     return {
       type: "triangle",
-      color: "#c3ffb8",
-      stroke: "#91d9ba",
+      // color: "#c3ffb8",
+      // stroke: "#91d9ba",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [16, 16],
     };
   } else if (type === 5) {
     // FLOW 节点，叶子节点，已不再显示
     return {
       type: "diamond",
-      color: "#C1FFC1",
-      stroke: "#00CD00",
+      // color: "#C1FFC1",
+      // stroke: "#00CD00",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [31, 31],
     };
   } else if (type === 6) {
     // Result 节点，叶子节点，已不再显示
     return {
       type: "rect",
-      color: "#C1FFC1",
-      stroke: "#00CD00",
+      // color: "#C1FFC1",
+      // stroke: "#00CD00",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [26, 26],
     };
   } else if (type === 7) {
     // None 节点，叶子节点已不再显示
     return {
       type: "triangle",
-      color: "#C1FFC1",
-      stroke: "#00CD00",
+      // color: "#C1FFC1",
+      // stroke: "#00CD00",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [16, 16],
     };
   } else if (type === 8) {
     // P_None 节点
     return {
       type: "circle",
-      color: "#C9D8DF",
-      stroke: "#98bccd",
+      // color: "#C9D8DF",
+      // stroke: "#98bccd",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [30, 30],
     };
   } else if (type === 9) {
     // P_AND
     return {
       type: "circle",
-      color: "#B2DEE1",
-      stroke: "#6dacb0",
+      // color: "#B2DEE1",
+      // stroke: "#6dacb0",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [30, 30],
     };
   } else if (type === 10) {
     // P_TRUE
     return {
       type: "circle",
-      color: "#F7E6D6",
-      stroke: "#d7bea7",
+      // color: "#F7E6D6",
+      // stroke: "#d7bea7",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [30, 30],
     };
   } else if (type === 11) {
     // P_ALL
     return {
       type: "circle",
-      color: "#4CB19C",
-      stroke: "#13878b",
+      // color: "#4CB19C",
+      // stroke: "#13878b",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [30, 30],
     };
   } else if (type === 12) {
     // P_ANY
     return {
       type: "circle",
-      color: "#D25B85",
-      stroke: "#d02561",
+      // color: "#D25B85",
+      // stroke: "#d02561",
+      color: "#FFFACD",
+      stroke: "#EEAD0E",
       size: [30, 30],
     };
   } else {
@@ -1059,7 +1083,8 @@ const jsonToGraph = (detailsData: any) => {
     };
     // console.log("2-treeData", treeData);
 
-    treeData.leafNodes.forEach((child: any) => {
+    // 递归将节点中的任意深度的 showConf 中的 confField 转为对象
+    const jsonToObj = (child: any) => {
       if (child.showConf.confField) {
         try {
           child.showConf.confField = JSON.parse(child.showConf.confField);
@@ -1067,15 +1092,22 @@ const jsonToGraph = (detailsData: any) => {
           console.log(error);
         }
       }
+      if (child.children && child.children.length) {
+        child.children.forEach((chi: any) => {
+          jsonToObj(chi);
+        });
+      }
+      if (child.leafNodes && child.leafNodes.length) {
+        child.leafNodes.forEach((chi: any) => {
+          jsonToObj(chi);
+        });
+      }
+    };
+    treeData.leafNodes.forEach((child: any) => {
+      jsonToObj(child);
     });
     treeData.children.forEach((child: any) => {
-      if (child.showConf.confField) {
-        try {
-          child.showConf.confField = JSON.parse(child.showConf.confField);
-        } catch (error) {
-          console.log(error);
-        }
-      }
+      jsonToObj(child);
     });
     // console.log("treeData", treeData);
 
@@ -1656,31 +1688,38 @@ const copyJSON = (jsonObj: any) => {
       }
       &-and {
         box-sizing: border-box;
-        border: 1px solid #f38f8c;
+        // border: 1px solid #f38f8c;
+        // background-color: #f7b7b5;
+        border: 1px solid #eead0e;
         width: 16px;
         height: 16px;
-        background-color: #f7b7b5;
+        background-color: #fffacd;
         transform: translateX(2px) rotate(45deg);
       }
       &-true {
         box-sizing: border-box;
-        border: 1px solid #f79d69;
+        border: 1px solid #eead0e;
+        // border: 1px solid #f79d69;
+        // background-color: #ffbc95;
         width: 16px;
         height: 16px;
-        background-color: #ffbc95;
-        transform: translateX(2px) rotate(45deg);
+        background-color: #fffacd;
+        transform: translateX(2px) scaleY(0.6) rotate(45deg);
       }
       &-all {
         box-sizing: border-box;
-        border: 1px solid #2ab5c9;
+        // border: 1px solid #2ab5c9;
+        // background-color: #aee8f8;
+        border: 1px solid #eead0e;
         width: 20px;
         height: 20px;
-        background-color: #aee8f8;
+        background-color: #fffacd;
       }
       &-any {
         position: relative;
         box-sizing: border-box;
-        border: 20px solid #91d9ba;
+        // border: 20px solid #91d9ba;
+        border: 20px solid #eead0e;
         border-left: 10px solid transparent;
         border-right: 10px solid transparent;
         border-top: 0;
@@ -1691,7 +1730,8 @@ const copyJSON = (jsonObj: any) => {
           left: 0;
           top: 0;
           box-sizing: border-box;
-          border: 18px solid #c3ffb8;
+          // border: 18px solid #c3ffb8;
+          border: 18px solid #fffacd;
           border-left: 9px solid transparent;
           border-right: 9px solid transparent;
           border-top: 0;
