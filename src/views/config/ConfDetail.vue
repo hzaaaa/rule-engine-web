@@ -101,7 +101,7 @@
       <div class="right">
         <el-scrollbar>
           <div v-for="child in childNodes" :key="child.id">
-            <el-card class="card" shadow="hover" @click="consoleChild(child)">
+            <el-card class="card" shadow="hover">
               <template #header>
                 <div class="card-header">
                   <span>{{ child.showConf.nodeName }}</span>
@@ -123,6 +123,7 @@
               </el-row>
               <el-row v-if="child?.showConf?.confField">
                 <div class="label">配置JSON：</div>
+                <!-- <json-viewer :value="JSON.parse(child.showConf.confField)" copyable boxed></json-viewer> -->
                 <el-input v-model="child.showConf.confField" type="textarea" :autosize="{ minRows: 5, maxRows: 20 }"></el-input>
               </el-row>
             </el-card>
@@ -379,9 +380,9 @@ import { copyTextToClipboard, dateToStr } from "@/utils/util";
 
 const route = useRoute();
 const router = useRouter();
-const { appId, baseId, confId } = route.query;
+const { appId, baseId } = route.query;
 
-console.log("route", route.params, appId, baseId, confId);
+// console.log("route", route.params, appId, baseId, confId);
 
 /**
  * 操作区
@@ -485,7 +486,7 @@ const registerFn = () => {
     "circle-plus",
     {
       draw(cfg: any, group: any) {
-        console.log("node.cgf", cfg);
+        // console.log("node.cgf", cfg);
         const circle = group.addShape("circle", {
           attrs: {
             fill: "pink",
@@ -531,7 +532,7 @@ const registerFn = () => {
     "rect-plus",
     {
       draw(cfg: any, group: any) {
-        console.log("node.cgf", cfg);
+        // console.log("node.cgf", cfg);
         const rect = group.addShape("rect", {
           attrs: {
             fill: "skyblue",
@@ -578,7 +579,7 @@ const registerFn = () => {
     "diamond-plus",
     {
       draw(cfg: any, group: any) {
-        console.log("node.cfg", cfg);
+        // console.log("node.cfg", cfg);
         const diamond = group.addShape("polygon", {
           attrs: {
             points: [
@@ -681,6 +682,7 @@ const initTree = (treeData: any[]) => {
     container = document.getElementById("container");
     const width = container?.scrollWidth;
     const height = container?.scrollHeight || 500;
+    const isFirstPainted = ref(false);
     graph = new G6.TreeGraph({
       container: "container",
       width,
@@ -698,6 +700,14 @@ const initTree = (treeData: any[]) => {
           */
           "drag-canvas",
           "zoom-canvas",
+          // {
+          //   type: "activate-relations",
+          //   trigger: "click",
+          // },
+          {
+            type: "click-select",
+            multiple: false,
+          },
         ],
       },
       defaultNode: {
@@ -717,6 +727,14 @@ const initTree = (treeData: any[]) => {
             path: "M 0,0 L 10,3 L 10,-3 Z",
             fill: "#cfcfcf",
           },
+        },
+      },
+      nodeStateStyles: {
+        selected: {
+          stroke: "pink",
+          lineWidth: 2,
+          shadowColor: "pink",
+          shadowBlur: 8,
         },
       },
       layout: {
@@ -779,6 +797,19 @@ const initTree = (treeData: any[]) => {
 
     graph.data(treeData);
     graph.render();
+    if (!isFirstPainted.value) {
+      isFirstPainted.value = true;
+      const rootNode = graph.find("node", (node: any) => {
+        return node.getModel().depth === 0;
+      });
+      const rootModel = rootNode.getModel();
+      // console.log("find", rootNode, rootModel);
+      // 初始加载时，默认选中根节点
+      graph.setItemState(rootNode, "selected", true);
+      currentNodeModel.value = rootModel;
+      currentNodeConf.value = rootModel.showConf;
+      childNodes.value = [...rootModel.leafNodes, ...rootModel.children];
+    }
     graph.fitView(100);
     bindEvents();
   }
@@ -906,9 +937,13 @@ const bindEvents = () => {
       currentNodeConf.value = null;
       childNodes.value = [];
       cancleAddNodeModel();
+      // graph.getNodes().forEach((node: any) => {
+      //   graph.clearItemStates(node);
+      // });
     }
   });
   // 监听 node 上面 mouse 事件
+  /*
   graph.on("node:contextmenu", (evt: any) => {
     const { item, originalEvent } = evt;
     originalEvent.preventDefault();
@@ -927,12 +962,19 @@ const bindEvents = () => {
     showOperation.value = true;
     // console.log("modal", selectedNode.value);
   });
+  */
   // 左键单击节点时
   graph.on("node:click", (evt: any) => {
     const { item } = evt;
     const model = item.getModel();
     // console.log("evt", evt);
     // console.log("model", model);
+    // graph.getNodes().forEach((node: any) => {
+    //   graph.clearItemStates(node);
+    // });
+    // graph.setItemState(item, "selected", true);
+    // graph.setItemState(item, "active", true);
+    // console.log("item After", item);
     // 切换节点时，需要先清空当前节点信息
     if (model?.showConf?.nodeId !== currentNodeConf?.value?.nodeId) {
       cancleAddNodeModel();
@@ -948,7 +990,7 @@ const refreshGraph = () => {
   currentNodeModel.value = null;
   childNodes.value = [];
   getConfDetailApi({ appId: Number(appId), baseId: Number(baseId), address: "server" }).then((res) => {
-    console.log("getConfDetailApi", res.data);
+    // console.log("getConfDetailApi", res.data);
     jsonToGraph(res.data);
   });
 };
@@ -960,7 +1002,7 @@ const jsonToGraph = (detailsData: any) => {
       graph = null;
     }
     const { root = <any>[] } = detailsData || {};
-    console.log("1-root", root);
+    // console.log("1-root", root);
     /*
     const createTreeData = (data: any[] = []): any => {
       if (data.length === 0) return [];
@@ -1010,7 +1052,7 @@ const jsonToGraph = (detailsData: any) => {
       leafNodes: res.leafNodes,
       children: res.children,
     };
-    console.log("2-treeData", treeData);
+    // console.log("2-treeData", treeData);
 
     initTree(treeData);
   } else {
@@ -1043,11 +1085,11 @@ const relationTypeList = [
   { name: "ALL", id: 3 },
   { name: "ANY", id: 4 },
   { name: "NONE", id: 0 },
-  { name: "P_AND", id: 9 },
-  { name: "P_TRUE", id: 10 },
-  { name: "P_ALL", id: 11 },
-  { name: "P_ANY", id: 12 },
-  { name: "P_NONE", id: 8 },
+  // { name: "P_AND", id: 9 },
+  // { name: "P_TRUE", id: 10 },
+  // { name: "P_ALL", id: 11 },
+  // { name: "P_ANY", id: 12 },
+  // { name: "P_NONE", id: 8 },
 ];
 
 const confClassList = ref<any[]>([]);
@@ -1066,8 +1108,8 @@ const confFieldsList = ref<any[]>([]); // 添加节点时的动态输入框列�
 const dynamicForm = ref<any>({}); // 添加节点时动态输入框绑定值
 
 const openEditModal = (timetype: number) => {
-  console.log("showConf", showConf.value);
-  console.log("showConf", selectedNode.value);
+  // console.log("showConf", showConf.value);
+  // console.log("showConf", selectedNode.value);
 
   showOperation.value = false;
   timeType.value = timetype;
@@ -1123,7 +1165,6 @@ const downNode = async () => {
   refreshGraph();
 };
 const deleteNode = () => {
-  console.log("deleteNode");
   showOperation.value = false;
   ElMessageBox.confirm(`确认删除<${showConf.value.labelName}>节点吗？`, "", {
     confirmButtonText: "确定",
@@ -1198,8 +1239,8 @@ const submitEditNodeModal = () => {
 };
 const cancleEditNodeModal = () => {
   editNodeModalVisible.value = false;
-  console.log("showConf", showConf.value);
-  console.log("selectedNode.value", selectedNode.value);
+  // console.log("showConf", showConf.value);
+  // console.log("selectedNode.value", selectedNode.value);
 };
 const onEditNodeModalClosed = () => {
   editNodeModalFormRef.value?.resetFields();
@@ -1268,7 +1309,6 @@ const onAddNodeModalClosed = () => {
   dynamicForm.value = {};
 };
 const onNodeTypeChange = (type: number) => {
-  console.log("onNodeTypeChange");
   if (type !== selectedNodeType.value) {
     addNodeModalForm.confName = "";
     confFieldsList.value.length = 0;
@@ -1303,7 +1343,7 @@ const showAddNodeModel = (type: "child" | "front" | "exchange" = "child") => {
   isOperationButtonsVisible.value = false;
   selectedNodeType.value = 1;
   if (type === "exchange") {
-    console.log("节点转换\n", currentNodeConf.value);
+    // console.log("节点转换\n", currentNodeConf.value);
     addNodeModelForm.name = currentNodeConf.value.nodeName;
     if (currentNodeConf.value.nodeType === 0) {
       addNodeModalForm.nodeType = 1;
@@ -1408,9 +1448,9 @@ const onNodeTypeChangeNew = (type: number) => {
  */
 const currentNodeModel = ref<any>(); // 当前节点的 model 信息(包含 conf 信息)
 const currentNodeConf = ref<any>(); // 当前节点的 conf 信息
-const consoleChild = (child: any) => {
-  console.log("consoleChild", child);
-};
+// const consoleChild = (child: any) => {
+//   console.log("consoleChild", child);
+// };
 const submitEditChildNode = (child: any) => {
   let params = <any>{
     appId,
