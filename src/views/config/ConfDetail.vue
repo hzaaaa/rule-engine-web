@@ -121,10 +121,13 @@
                 <div class="label">节点类型：</div>
                 <div>{{ child.showConf.nodeType }}</div>
               </el-row>
-              <el-row v-if="child?.showConf?.confField">
+              <el-row v-if="child?.showConf?.confField" class="jsonbox">
                 <div class="label">配置JSON：</div>
-                <!-- <json-viewer :value="JSON.parse(child.showConf.confField)" copyable boxed></json-viewer> -->
-                <el-input v-model="child.showConf.confField" type="textarea" :autosize="{ minRows: 5, maxRows: 20 }"></el-input>
+                <vue-json-pretty v-model:data="child.showConf.confField" editable></vue-json-pretty>
+                <el-button type="primary" link size="small" class="tips" @click="copyJSON(child.showConf.confField)"
+                  >复制 JSON</el-button
+                >
+                <!-- <el-input v-model="child.showConf.confField" type="textarea" :autosize="{ minRows: 5, maxRows: 20 }"></el-input> -->
               </el-row>
             </el-card>
           </div>
@@ -377,6 +380,8 @@ import {
 } from "@/api/engine/engine";
 import { FormInstance } from "element-plus";
 import { copyTextToClipboard, dateToStr } from "@/utils/util";
+import VueJsonPretty from "vue-json-pretty";
+import "vue-json-pretty/lib/styles.css";
 
 const route = useRoute();
 const router = useRouter();
@@ -1054,6 +1059,26 @@ const jsonToGraph = (detailsData: any) => {
     };
     // console.log("2-treeData", treeData);
 
+    treeData.leafNodes.forEach((child: any) => {
+      if (child.showConf.confField) {
+        try {
+          child.showConf.confField = JSON.parse(child.showConf.confField);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    });
+    treeData.children.forEach((child: any) => {
+      if (child.showConf.confField) {
+        try {
+          child.showConf.confField = JSON.parse(child.showConf.confField);
+        } catch (error) {
+          console.log(error);
+        }
+      }
+    });
+    // console.log("treeData", treeData);
+
     initTree(treeData);
   } else {
     const emptyTreeData: any = {
@@ -1458,7 +1483,7 @@ const submitEditChildNode = (child: any) => {
     editType: 2,
     selectId: child.showConf.nodeId,
   };
-  if (child.showConf.confField) params.confField = child.showConf.confField;
+  if (child.showConf.confField) params.confField = JSON.stringify(child.showConf.confField);
   postConfEditApi(params).then((res) => {
     if (res.code === 200) {
       ElMessage.success("success");
@@ -1487,6 +1512,21 @@ const deleteChildNode = (child: any) => {
     .catch((err) => {
       console.error("postConfEditApi 错误", err);
     });
+};
+const copyJSON = (jsonObj: any) => {
+  if (navigator.clipboard) {
+    // 新api，安全限制较多，https 或 localhost 才可用
+    navigator.clipboard.writeText(JSON.stringify(jsonObj));
+  } else {
+    // 传统api，随时可能会废弃
+    const tempInput = document.createElement("input");
+    tempInput.setAttribute("value", JSON.stringify(jsonObj));
+    document.body.append(tempInput);
+    tempInput.select();
+    document.execCommand("copy");
+    tempInput.remove();
+  }
+  ElMessage.success("复制成功");
 };
 </script>
 
@@ -1561,8 +1601,26 @@ const deleteChildNode = (child: any) => {
         }
       }
       :deep(.el-card__header) {
-        padding-top: 8px;
-        padding-bottom: 8px;
+        padding: 8px 10px;
+      }
+      :deep(.el-card__body) {
+        padding: 10px;
+      }
+      .jsonbox {
+        display: flex;
+        position: relative;
+        flex-direction: column;
+        .vjs-tree {
+          box-sizing: border-box;
+          padding: 2px;
+          border: 1px solid #eeeeee;
+          border-radius: 8px;
+        }
+        .tips {
+          position: absolute;
+          right: 0;
+          top: 0;
+        }
       }
     }
   }
