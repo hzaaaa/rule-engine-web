@@ -8,7 +8,8 @@
     </div>
     <div class="right">
       <div id="form">
-        <el-input v-model="mockJson" style="width: 200px" type="textarea" :autosize="{ minRows: 5, maxRows: 10 }"></el-input>
+        <el-input v-model="mockJson" style="width: 200px" type="textarea"
+          :autosize="{ minRows: 5, maxRows: 10 }"></el-input>
         <br />
         <el-button @click="toJSON">序列化</el-button>
         <el-button @click="fromJSON">反序列化</el-button>
@@ -25,7 +26,8 @@
         </el-row>
         <el-row>
           <div class="label">表达式：</div>
-          <el-input v-model="expression" style="width: 200px" type="textarea" :autosize="{ minRows: 10, maxRows: 30 }"></el-input>
+          <el-input v-model="expression" style="width: 200px" type="textarea"
+            :autosize="{ minRows: 10, maxRows: 30 }"></el-input>
         </el-row>
         <el-button @click="saveInfo">保存</el-button>
       </div>
@@ -34,10 +36,21 @@
 </template>
 
 <script setup lang="ts">
-import { Graph, Shape, Addon } from "@antv/x6";
+import { Graph, Shape } from "@antv/x6";
 import { onMounted, ref } from "vue";
 import mockTreeDataResult from "./mock.json";
 import Hierarchy from "@antv/hierarchy";
+import { Stencil } from '@antv/x6-plugin-stencil';
+
+
+
+import { Keyboard } from '@antv/x6-plugin-keyboard';
+import { Transform } from '@antv/x6-plugin-transform'
+import { Selection } from '@antv/x6-plugin-selection'
+import { Snapline } from '@antv/x6-plugin-snapline'
+import { Clipboard } from '@antv/x6-plugin-clipboard'
+import { History } from '@antv/x6-plugin-history'
+
 
 let graph: any = null;
 let container: any = null;
@@ -47,26 +60,29 @@ const initGraph = (data: any) => {
   container = document.getElementById("container");
   const width = container?.scrollWidth;
   const height = container?.scrollHeight || 500;
+
   // #region 初始化画布
   graph = new Graph({
     container,
     width,
     height,
+
     // 是否开启网格
     grid: true,
+    panning: false,
     // 鼠标滚轮行为
     mousewheel: {
-      enabled: true,
+      enabled: false,
       minScale: 0.2,
       maxScale: 3,
     },
-    scroller: {
-      enabled: true,
-      pannable: true,
-      modifiers: "ctrl",
-    },
+
     // 连线风格
     connecting: {
+      allowBlank: false,//是否允许连接到画布空白位置的点，默认为 true。
+      allowLoop: false,//是否允许创建循环连线，即边的起始节点和终止节点为同一节点，默认为 true。
+      allowNode: false,//是否允许边连接到节点（非节点上的连接桩），默认为 true。
+      allowMulti: false,//是否允许在相同的起始节点和终止之间创建多条边，默认为 true。
       router: {
         name: "manhattan",
         args: {
@@ -81,28 +97,31 @@ const initGraph = (data: any) => {
       },
       anchor: "center",
       connectionPoint: "anchor",
-      allowBlank: false,
+
       // 连线过程中自动吸附
       snap: {
         radius: 20,
       },
       // 连接的过程中创建新的边
       createEdge() {
-        return new Shape.Edge({
-          attrs: {
-            line: {
-              stroke: "#A2B1C3",
-              strokeWidth: 2,
-              // 箭头
-              targetMarker: {
-                name: "block",
-                width: 12,
-                height: 8,
-              },
-            },
-          },
-          zIndex: 0,
-        });
+        // return new Shape.Edge({
+        //   attrs: {
+        //     line: {
+        //       stroke: '#A2B1C3',
+        //       strokeWidth: 2,
+        //       targetMarker: {
+        //         name: 'block',
+        //         width: 12,
+        //         height: 8,
+        //       },
+        //     },
+        //   },
+        //   zIndex: 0,
+        // })
+        return this.createEdge({
+          shape: "my-edge",
+        })
+
       },
       // 在移动边的时候判断连接是否有效
       validateConnection({ targetMagnet }) {
@@ -115,29 +134,56 @@ const initGraph = (data: any) => {
         name: "stroke",
         args: {
           attrs: {
-            fill: "#5F95FF",
+            fill: "#fff",
             stroke: "#5F95FF",
           },
         },
       },
     },
-    resizing: true,
-    rotating: true,
-    selecting: {
-      enabled: true,
-      rubberband: true,
-      showNodeSelectionBox: true,
-    },
-    snapline: true,
-    keyboard: true,
-    clipboard: true,
   });
+  // #endregion
+
+  // #region 使用插件
+  graph
+    .use(
+      new Transform({
+        resizing: false,
+        rotating: false,
+      }),
+    )
+    .use(
+      new Selection({
+        enabled: true,
+        rubberband: true,
+        showNodeSelectionBox: true,
+      }),
+    )
+    .use(
+      new Snapline({
+        enabled: true,
+      }),
+    )
+    .use(
+      new Keyboard({
+        enabled: true,
+      }),
+    )
+    .use(
+      new Clipboard({
+        enabled: true,
+      }),
+    )
+    .use(
+      new History({
+        enabled: true,
+      }),
+    )
   // #endregion
 
   // 开始{id: 1, }，多个计算节点，
 
   // #region 初始化 stencil
-  const stencil = new Addon.Stencil({
+  const stencil = new Stencil({
     title: "组件库",
     target: graph,
     stencilGraphWidth: 200,
@@ -145,7 +191,7 @@ const initGraph = (data: any) => {
     placeholder: "搜索组件",
     notFoundText: "未找到",
     // collapsable: false,
-    search: (cell, keyword) => {
+    search: (cell: any, keyword: any) => {
       if (keyword) return (cell.attr("text/text") as String).includes(keyword);
       return true;
     },
@@ -154,15 +200,18 @@ const initGraph = (data: any) => {
         title: "基础测试库1",
         name: "group1",
       },
-      {
-        title: "组件测试库2",
-        name: "group2",
-      },
+      // {
+      //   title: "组件测试库2",
+      //   name: "group2",
+      // },
     ],
     layoutOptions: {
-      columns: 2,
-      columnWidth: 80,
+      columns: 1,
+      columnWidth: 200,
+      dx: 0,
       rowHeight: 55,
+      // center: true,
+      // columnWidth:
     },
   });
   document.getElementById("stencil")!.appendChild(stencil.container);
@@ -215,8 +264,9 @@ const initGraph = (data: any) => {
       graph.removeCells(cells);
     }
   });
+  // #endregion
 
-  // 控制连接桩显示/隐藏
+  // #region 控制连接桩显示/隐藏
   const showPorts = (ports: NodeListOf<SVGElement>, show: boolean) => {
     for (let i = 0, len = ports.length; i < len; i++) {
       ports[i].style.visibility = show ? "visible" : "hidden";
@@ -232,6 +282,10 @@ const initGraph = (data: any) => {
     const ports = container.querySelectorAll(".x6-port-body") as NodeListOf<SVGElement>;
     showPorts(ports, false);
   });
+  graph.on("edge:click", ({ edge }: any) => {
+    debugger
+    edge.attrs.line.stroke = 'ff0000'
+  });
   // #endregion
 
   // #region 初始化图形
@@ -242,13 +296,13 @@ const initGraph = (data: any) => {
         position: "top",
         attrs: {
           circle: {
-            r: 4,
+            r: 3,
             magnet: true,
             stroke: "#5f95ff",
             strokeWidth: 1,
             fill: "#ffffff",
             style: {
-              visibility: "hidden",
+              // visibility: "hidden",
             },
           },
         },
@@ -257,13 +311,13 @@ const initGraph = (data: any) => {
         position: "right",
         attrs: {
           circle: {
-            r: 4,
+            r: 3,
             magnet: true,
             stroke: "#5f95ff",
             strokeWidth: 1,
             fill: "#ffffff",
             style: {
-              visibility: "hidden",
+              // visibility: "hidden",
             },
           },
         },
@@ -272,13 +326,13 @@ const initGraph = (data: any) => {
         position: "bottom",
         attrs: {
           circle: {
-            r: 4,
+            r: 3,
             magnet: true,
             stroke: "#5f95ff",
             strokeWidth: 1,
             fill: "#ffffff",
             style: {
-              visibility: "hidden",
+              // visibility: "hidden",
             },
           },
         },
@@ -287,39 +341,91 @@ const initGraph = (data: any) => {
         position: "left",
         attrs: {
           circle: {
-            r: 4,
+            r: 3,
             magnet: true,
             stroke: "#5f95ff",
             strokeWidth: 1,
             fill: "#ffffff",
             style: {
-              visibility: "hidden",
+              // visibility: "hidden",
             },
           },
         },
       },
     },
-    items: [{ group: "top" }, { group: "right" }, { group: "bottom" }, { group: "left" }],
+    // items: [{ group: "top" }, { group: "right" }, { group: "bottom" }, { group: "left" }],
   };
 
+  // #region 自定义边
+  Graph.registerEdge('my-edge', {
+    inherit: 'edge',
+    attrs: {
+      line: {
+        stroke: '#A2B1C3',
+        strokeWidth: 2,
+        targetMarker: {
+          name: 'block',
+          width: 12,
+          height: 8,
+        },
+      },
+
+    },
+    zIndex: 0,
+  }, true)
   Graph.registerNode(
     "custom-rect",
     {
-      inherit: "rect",
-      width: 66,
-      height: 36,
+      inherit: 'rect', // 继承于 rect 节点
+      width: 120,
+      height: 40,
+      markup: [
+        {
+          tagName: 'rect', // 标签名称
+          selector: 'body', // 选择器
+        },
+        {
+          tagName: 'image',
+          selector: 'img',
+        },
+        {
+          tagName: 'text',
+          selector: 'label',
+        },
+      ],
       attrs: {
         body: {
+          stroke: '#8f8f8f',
           strokeWidth: 1,
-          stroke: "#5f95ff",
-          fill: "#eff4ff",
+          fill: '#fff',
+          rx: 20,
+          ry: 20,
         },
-        text: {
-          fontSize: 12,
-          fill: "#333333",
+        img: {
+          'xlink:href':
+            'https://gw.alipayobjects.com/zos/antfincdn/FLrTNDvlna/antv.png',
+          width: 16,
+          height: 16,
+          x: 12,
+          y: 12,
         },
       },
-      ports: { ...ports },
+
+      ports: {
+        ...ports,
+        items: [
+          {
+            group: "top",
+            id: 'port1',
+          },
+          {
+            group: "bottom",
+            id: 'port3',
+          },
+        ],
+      },
+
+
     },
     true
   );
@@ -371,105 +477,116 @@ const initGraph = (data: any) => {
           fill: "#262626",
         },
       },
-      ports: { ...ports },
+      ports: {
+        ...ports,
+      },
     },
     true
   );
 
   const r1 = graph.createNode({
-    shape: "custom-rect",
+    shape: "custom-circle",
     label: "开始",
-    attrs: {
-      body: {
-        rx: 20,
-        ry: 26,
-      },
+    data: {
+      type: 3,
+      name: "开始节点",
+    },
+    ports: {
+      items: [
+        {
+          id: 'port3',
+          group: 'bottom',
+        },
+
+      ],
     },
   });
   const r2 = graph.createNode({
     shape: "custom-rect",
-    label: "过程",
-  });
-  const r3 = graph.createNode({
-    shape: "custom-rect",
-    attrs: {
-      body: {
-        rx: 6,
-        ry: 6,
-      },
-    },
-    label: "计算",
+    label: "过程1",
     data: {
       type: 2,
       name: "计算节点",
       expression: "",
     },
-  });
-  const r4 = graph.createNode({
-    shape: "custom-polygon",
+
     attrs: {
-      body: {
-        refPoints: "0,10 10,0 20,10 10,20",
+
+      img: {
+        'xlink:href':
+          'https://mdn.alipayobjects.com/huamei_f4t1bn/afts/img/A*RXnuTpQ22xkAAAAAAAAAAAAADtOHAQ/original',
+
       },
     },
-    label: "决策",
+  });
+  const r3 = graph.createNode({
+    shape: "custom-rect",
+
+    label: "过程2",
     data: {
-      type: 1,
-      name: "决策节点",
+      type: 2,
+      name: "计算节点",
+      expression: "",
+    },
+    ports: {
+      items: [
+        {
+          group: 'bottom',
+        },
+        {
+          group: 'top',
+        },
+
+      ],
     },
   });
-  const r5 = graph.createNode({
-    shape: "custom-polygon",
-    attrs: {
-      body: {
-        refPoints: "10,0 40,0 30,20 0,20",
-      },
-    },
-    label: "数据",
-  });
+  // const r4 = graph.createNode({
+  //   shape: "custom-polygon",
+  //   attrs: {
+  //     body: {
+  //       refPoints: "0,10 10,0 20,10 10,20",
+  //     },
+  //   },
+  //   label: "过程3",
+  //   data: {
+  //     type: 1,
+  //     name: "计算节点",
+  //   },
+  // });
+  // const r5 = graph.createNode({
+  //   shape: "custom-polygon",
+  //   attrs: {
+  //     body: {
+  //       refPoints: "10,0 40,0 30,20 0,20",
+  //     },
+  //   },
+  //   label: "其他节点",
+  // });
   const r6 = graph.createNode({
     shape: "custom-circle",
-    label: "连接",
+    label: "结束",
     data: {
       type: 3,
-      name: "连接节点",
+      name: "结束节点",
+    },
+    ports: {
+      items: [
+        {
+          id: 'port1',
+          group: 'top',
+        },
+
+      ],
     },
   });
-  stencil.load([r1, r2, r3, r4, r5, r6], "group1");
+  stencil.load([r1, r2, r3, r6], "group1");//r4, r5,
   // #endregion
 
-  // graph.fromJSON(data);
+  graph.fromJSON(data);
   bindEvents();
 };
 
-const data = {
-  // 节点
-  nodes: [
-    {
-      id: "node1", // String，可选，节点的唯一标识
-      x: 40, // Number，必选，节点位置的 x 值
-      y: 40, // Number，必选，节点位置的 y 值
-      width: 80, // Number，可选，节点大小的 width 值
-      height: 40, // Number，可选，节点大小的 height 值
-      label: "hello", // String，节点标签
-    },
-    {
-      id: "node2", // String，节点的唯一标识
-      x: 160, // Number，必选，节点位置的 x 值
-      y: 180, // Number，必选，节点位置的 y 值
-      width: 80, // Number，可选，节点大小的 width 值
-      height: 40, // Number，可选，节点大小的 height 值
-      label: "world", // String，节点标签
-    },
-  ],
-  // 边
-  edges: [
-    {
-      source: "node1", // String，必须，起始节点 id
-      target: "node2", // String，必须，目标节点 id
-    },
-  ],
-};
+const data = { "cells": [{ "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "21077889-bb97-4f6d-9fbf-d75cc48634a1", "zIndex": 0, "source": { "cell": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "port": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }, "target": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "82790483-00b6-429b-a82a-2c53ff7972c0" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "12f70b77-269d-44b5-8311-f17161de554f", "zIndex": 0, "source": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, "target": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "e4d4aa99-53bd-4b74-a401-40a234742252", "zIndex": 0, "source": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, "target": { "cell": "080665f4-15b7-425f-9945-75fad0ea59ed", "port": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" } }, { "position": { "x": 430, "y": 118 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "开始" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }] }, "id": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "data": { "type": 3, "name": "开始节点" }, "zIndex": 3 }, { "position": { "x": 450, "y": 400 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "结束" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "top", "id": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" }] }, "id": "080665f4-15b7-425f-9945-75fad0ea59ed", "data": { "type": 3, "name": "结束节点" }, "zIndex": 4 }, { "position": { "x": 310, "y": 240 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程1" }, "img": { "xlink:href": "https://mdn.alipayobjects.com/huamei_f4t1bn/afts/img/A*RXnuTpQ22xkAAAAAAAAAAAAADtOHAQ/original" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, { "group": "top", "id": "82790483-00b6-429b-a82a-2c53ff7972c0" }] }, "id": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 5 }, { "position": { "x": 460, "y": 320 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程2" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, { "group": "top", "id": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" }] }, "id": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 6 }] };
 
 const bindEvents = () => {
   graph.on("node:click", ({ node }: any) => {
@@ -478,9 +595,10 @@ const bindEvents = () => {
     // console.log("y", y);
     console.log("node", node.data);
     if (node.data) {
-      type.value = node.data.showConf.nodeType;
-      name.value = node.data.showConf.labelName;
-      expression.value = node.data.showConf.confField;
+      console.log(node.data)
+      // type.value = node.data.showConf.nodeType;
+      // name.value = node.data.showConf.labelName;
+      // expression.value = node.data.showConf.confField;
     }
   });
   graph.on("blank:click", () => {
@@ -488,6 +606,9 @@ const bindEvents = () => {
     name.value = "";
     expression.value = "";
   });
+  // graph.on("edge:mouseenter", ({ edge }: any) => {
+  //   // edge.
+  // });
 };
 
 const refreshGraph = () => {
@@ -504,241 +625,41 @@ const toJSON = () => {
   console.log("\n", JSON.stringify(graph.toJSON()));
 };
 const fromJSON = () => {
-  let obj = {
-    cells: [
-      {
-        shape: "edge",
-        attrs: { line: { stroke: "#A2B1C3", targetMarker: { name: "block", width: 12, height: 8 } } },
-        id: "f88d5d55-4fa0-48cf-a864-6d3e9eda78f2",
-        zIndex: 0,
-        source: { cell: "a64da3ea-72f7-4c3d-b397-fdba16f4b08c", port: "96990c84-279f-43b2-9f1e-66f45d899841" },
-        target: { cell: "0245b296-1dd8-4476-b46f-00988a4cc4be", port: "526646e1-fd26-46db-9521-a23e86e5927a" },
-      },
-      {
-        shape: "edge",
-        attrs: { line: { stroke: "#A2B1C3", targetMarker: { name: "block", width: 12, height: 8 } } },
-        id: "f66390fc-eab7-49e7-8828-e3997d9bed47",
-        zIndex: 0,
-        source: { cell: "a64da3ea-72f7-4c3d-b397-fdba16f4b08c", port: "96990c84-279f-43b2-9f1e-66f45d899841" },
-        target: { cell: "dbb93ed2-447c-41df-b61b-a35edd0d8935", port: "526646e1-fd26-46db-9521-a23e86e5927a" },
-      },
-      {
-        position: { x: 190, y: 160 },
-        size: { width: 66, height: 36 },
-        attrs: { text: { text: "决策" }, body: { refPoints: "0,10 10,0 20,10 10,20" } },
-        visible: true,
-        shape: "custom-polygon",
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-          },
-          items: [
-            { group: "top", id: "4ccb1478-8884-4b10-ba72-55ad7146b38f" },
-            { group: "bottom", id: "96990c84-279f-43b2-9f1e-66f45d899841" },
-          ],
-        },
-        id: "a64da3ea-72f7-4c3d-b397-fdba16f4b08c",
-        data: { type: 1, name: "决策节点" },
-        zIndex: 1,
-      },
-      {
-        position: { x: 124, y: 236 },
-        size: { width: 66, height: 36 },
-        attrs: { text: { text: "计算" }, body: { rx: 6, ry: 6 } },
-        visible: true,
-        shape: "custom-rect",
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-          },
-          items: [
-            { group: "top", id: "526646e1-fd26-46db-9521-a23e86e5927a" },
-            { group: "right", id: "85ca2adb-565c-40ad-9a55-066d40186802" },
-            { group: "bottom", id: "9b3a06e5-b04e-49ca-a96b-911589b9a4c6" },
-            { group: "left", id: "add769e5-e60d-423d-9e5b-984ca5ed7cf6" },
-          ],
-        },
-        id: "0245b296-1dd8-4476-b46f-00988a4cc4be",
-        data: { type: 2, name: "计算节点1", expression: "x=1" },
-        zIndex: 2,
-      },
-      {
-        position: { x: 256, y: 236 },
-        size: { width: 66, height: 36 },
-        attrs: { text: { text: "计算" }, body: { rx: 6, ry: 6 } },
-        visible: true,
-        shape: "custom-rect",
-        ports: {
-          groups: {
-            top: {
-              position: "top",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            right: {
-              position: "right",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            bottom: {
-              position: "bottom",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-            left: {
-              position: "left",
-              attrs: {
-                circle: {
-                  r: 4,
-                  magnet: true,
-                  stroke: "#5f95ff",
-                  strokeWidth: 1,
-                  fill: "#ffffff",
-                  style: { visibility: "hidden" },
-                },
-              },
-            },
-          },
-          items: [
-            { group: "top", id: "526646e1-fd26-46db-9521-a23e86e5927a" },
-            { group: "right", id: "85ca2adb-565c-40ad-9a55-066d40186802" },
-            { group: "bottom", id: "9b3a06e5-b04e-49ca-a96b-911589b9a4c6" },
-            { group: "left", id: "add769e5-e60d-423d-9e5b-984ca5ed7cf6" },
-          ],
-        },
-        id: "dbb93ed2-447c-41df-b61b-a35edd0d8935",
-        data: { type: 2, name: "计算节点2", expression: "y=2" },
-        zIndex: 3,
-      },
-    ],
-  };
-  console.log("fromJSON", graph.fromJSON(obj));
+  // let graphObj = { "cells": [{ "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "fcd1d651-fedb-4d3d-bfdf-00209861718e", "zIndex": 0, "source": { "cell": "07a292af-75c8-4351-93cc-5ccc456efbf0", "port": "12fca000-ba16-426d-a04b-b81635689ca4" }, "target": { "cell": "3cc53174-9b7f-4ce1-833c-c81cbfe99e01", "port": "6b8d2cb1-5751-47ba-8d8e-a509cb224593" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "23210c9c-d31f-4a8f-b7c4-6ee4dbd41885", "zIndex": 0, "source": { "cell": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "port": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }, "target": { "cell": "07a292af-75c8-4351-93cc-5ccc456efbf0", "port": "4283b385-11b7-4c5a-8165-e2e9cba8e2db" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "47dbce90-77fe-456e-b144-1235b9deec76", "zIndex": 0, "source": { "cell": "3cc53174-9b7f-4ce1-833c-c81cbfe99e01", "port": "80a68398-9040-4cbc-9239-f243207ea309" }, "target": { "cell": "080665f4-15b7-425f-9945-75fad0ea59ed", "port": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" } }, { "position": { "x": 392.5, "y": 310 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程2" }, "body": { "rx": 12, "ry": 12 } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "80a68398-9040-4cbc-9239-f243207ea309" }, { "group": "top", "id": "6b8d2cb1-5751-47ba-8d8e-a509cb224593" }] }, "id": "3cc53174-9b7f-4ce1-833c-c81cbfe99e01", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 1 }, { "position": { "x": 392.5, "y": 220 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程1" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "12fca000-ba16-426d-a04b-b81635689ca4" }, { "group": "top", "id": "4283b385-11b7-4c5a-8165-e2e9cba8e2db" }] }, "id": "07a292af-75c8-4351-93cc-5ccc456efbf0", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 2 }, { "position": { "x": 430, "y": 118 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "开始" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }] }, "id": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "data": { "type": 3, "name": "开始节点" }, "zIndex": 3 }, { "position": { "x": 450, "y": 400 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "结束" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "top", "id": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" }] }, "id": "080665f4-15b7-425f-9945-75fad0ea59ed", "data": { "type": 3, "name": "结束节点" }, "zIndex": 4 }, { "position": { "x": 182, "y": 180 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程1" }, "img": { "xlink:href": "https://mdn.alipayobjects.com/huamei_f4t1bn/afts/img/A*RXnuTpQ22xkAAAAAAAAAAAAADtOHAQ/original" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "6c8c18de-2740-40cf-8723-e47c7e2b096d" }, { "group": "top", "id": "492fe34e-827d-4459-8b95-44b6d749eaf2" }] }, "id": "4ba52f6f-407a-4bcc-b582-d0ea55e8ae24", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 5 }] };
+  let graphObj = [
+    {
+      id: "node1",
+      x: 40,
+      y: 40,
+
+      label: "Hello1",
+      shape: "custom-rect",
+
+    },
+    {
+      id: "node2",
+      x: 140,
+      y: 140,
+
+      label: "Hello2",
+      shape: "custom-rect",
+    },
+
+  ]
+    ;
+  graph.fromJSON(graphObj);
+
+  graph.addEdge({
+    shape: "my-edge",
+    source: {
+      cell: 'node1',
+      port: 'port3'
+    },
+    target: {
+      cell: 'node2',
+      port: 'port1'
+    },
+  })
 };
 
 const type = ref("");
@@ -924,9 +845,11 @@ const layoutTree = () => {
 .x6 {
   display: flex;
   height: 100%;
+
   .left {
     flex-shrink: 0;
     width: 200px;
+
     #stencil {
       position: relative;
       border-right: 1px solid #dddddd;
@@ -934,13 +857,16 @@ const layoutTree = () => {
       height: 100%;
     }
   }
+
   .middle {
     flex-grow: 1;
   }
+
   .right {
     width: 300px;
   }
 }
+
 #container {
   height: 100%;
 }

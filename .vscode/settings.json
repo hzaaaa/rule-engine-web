@@ -11,5 +11,13 @@
   // prettier 默认格式化工具选择
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   // stylelint 校验的文件格式
-  "stylelint.validate": ["css", "scss", "vue", "html"],
+  "stylelint.validate": [
+    "css",
+    "scss",
+    "vue",
+    "html"
+  ],
+  "[vue]": {
+    "editor.defaultFormatter": "Vue.volar"
+  },
 }
