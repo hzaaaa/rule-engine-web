@@ -3,6 +3,54 @@
   "msg": "成功",
   "data": [
     {
+      "path": "/app/list_v1",
+      "name": "AppList_v1",
+      "component": "/config_v1/AppList",
+      "meta": {
+        "icon": "MessageBox",
+        "title": "规则配置_v1",
+        "isLink": "",
+        "isHide": false,
+        "isFull": false,
+        "isAffix": false,
+        "isKeepAlive": true
+      },
+      "children": [
+        {
+          "path": "/base/list_v1",
+          "name": "BaseList_v1",
+          "component": "/config_v1/BaseList",
+          "meta": {
+            "icon": "MessageBox",
+            "title": "Base列表_v1",
+            "activeMenu": "/app/list_v1",
+            "isLink": "",
+            "isHide": true,
+            "isFull": false,
+            "isAffix": false,
+            "isKeepAlive": true
+          },
+          "children": [
+            {
+              "path": "/conf/detail_v1",
+              "name": "ConfDetail_v1",
+              "component": "/config_v1/ConfDetail",
+              "meta": {
+                "icon": "MessageBox",
+                "title": "Conf详情_v1",
+                "activeMenu": "/app/list_v1",
+                "isLink": "",
+                "isHide": true,
+                "isFull": false,
+                "isAffix": false,
+                "isKeepAlive": true
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
       "path": "/app/list",
       "name": "AppList",
       "component": "/config/AppList",
