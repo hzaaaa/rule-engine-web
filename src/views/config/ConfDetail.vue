@@ -1051,7 +1051,7 @@ const jsonToGraph = (detailsData: any) => {
     };
     */
     const filterLeaveAndChildren = (children: any[] = []) => {
-      if (!children.length) return {};
+      if (!children.length) return { leafNodes: [], children: [] };
       const _leave = <any>[];
       const _children = <any>[];
       children.forEach((child: any) => {
