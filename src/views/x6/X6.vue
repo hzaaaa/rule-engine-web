@@ -4,7 +4,9 @@
       <div id="stencil"></div>
     </div>
     <div class="middle">
-      <div id="container"></div>
+      <div class="container-wrap">
+        <div id="container"></div>
+      </div>
     </div>
     <div class="right">
       <div id="form">
@@ -32,19 +34,30 @@
         <el-button @click="saveInfo">保存</el-button>
       </div>
     </div>
+    <Teleport to="body">
+      <div class="contextMenu" ref="contentMenuRef" :style="{ display: contentMenuVisible ? '' : 'none', }"
+        contentMenuVisible="">
+        <div class="">1111111111111111111111111111111111</div>
+        <div class="">1111111111111111111111111111111111</div>
+        <div class="">1111111111111111111111111111111111</div>
+
+      </div>
+    </Teleport>
+
   </div>
 </template>
 
 <script setup lang="ts">
 import { Graph, Shape } from "@antv/x6";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 import mockTreeDataResult from "./mock.json";
 import Hierarchy from "@antv/hierarchy";
+import rightClickContextmenu from './rightClickContextmenu.vue'
 
 import x6init, { test } from './x6init';
 
 
-
+import useClickOutside from './useClickOutside'
 
 
 let graph: any = null;
@@ -68,9 +81,9 @@ const initGraph = (data: any) => {
     panning: false,
     // 鼠标滚轮行为
     mousewheel: {
-      enabled: false,
-      minScale: 0.2,
-      maxScale: 3,
+      enabled: true,
+      minScale: 0.5,
+      maxScale: 2,
     },
 
     // 连线风格
@@ -100,20 +113,7 @@ const initGraph = (data: any) => {
       },
       // 连接的过程中创建新的边
       createEdge() {
-        // return new Shape.Edge({
-        //   attrs: {
-        //     line: {
-        //       stroke: '#A2B1C3',
-        //       strokeWidth: 2,
-        //       targetMarker: {
-        //         name: 'block',
-        //         width: 12,
-        //         height: 8,
-        //       },
-        //     },
-        //   },
-        //   zIndex: 0,
-        // })
+
         return this.createEdge({
           shape: "my-edge",
         })
@@ -152,13 +152,33 @@ const initGraph = (data: any) => {
 
 const data = { "cells": [{ "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "21077889-bb97-4f6d-9fbf-d75cc48634a1", "zIndex": 0, "source": { "cell": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "port": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }, "target": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "82790483-00b6-429b-a82a-2c53ff7972c0" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "12f70b77-269d-44b5-8311-f17161de554f", "zIndex": 0, "source": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, "target": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "e4d4aa99-53bd-4b74-a401-40a234742252", "zIndex": 0, "source": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, "target": { "cell": "080665f4-15b7-425f-9945-75fad0ea59ed", "port": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" } }, { "position": { "x": 430, "y": 118 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "开始" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }] }, "id": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "data": { "type": 3, "name": "开始节点" }, "zIndex": 3 }, { "position": { "x": 450, "y": 400 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "结束" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "top", "id": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" }] }, "id": "080665f4-15b7-425f-9945-75fad0ea59ed", "data": { "type": 3, "name": "结束节点" }, "zIndex": 4 }, { "position": { "x": 310, "y": 240 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程1" }, "img": { "xlink:href": "https://mdn.alipayobjects.com/huamei_f4t1bn/afts/img/A*RXnuTpQ22xkAAAAAAAAAAAAADtOHAQ/original" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, { "group": "top", "id": "82790483-00b6-429b-a82a-2c53ff7972c0" }] }, "id": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 5 }, { "position": { "x": 460, "y": 320 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程2" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, { "group": "top", "id": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" }] }, "id": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 6 }] };
 
+const contentMenuRef = <any>ref(null);
+const isClickOutside = useClickOutside(contentMenuRef)
+let contentMenuVisible = ref(false)
+watch(isClickOutside, () => {
+  if (contentMenuVisible.value && isClickOutside.value) {  //下拉展开且点击位置为组件外的区域隐藏
+    contentMenuVisible.value = false
+  }
+})
+
 const bindEvents = () => {
+  graph.on("node:contextmenu", (obj: any) => {
+
+
+    // contentMenuRef.value.$refs.triggeringElementRef = obj.e.target;
+    contentMenuVisible.value = true;
+    isClickOutside.value = false;
+
+    contentMenuRef.value.style.left = obj.e.pageX + 'px';
+    contentMenuRef.value.style.top = obj.e.pageY + 'px';
+
+  });
   graph.on("node:click", ({ node }: any) => {
     // console.log("e", e);
     // console.log("x", x);
     // console.log("y", y);
     console.log("node", node.data);
-    debugger
+    //
     if (node.data) {
       console.log(node.data);
 
@@ -180,6 +200,7 @@ const bindEvents = () => {
 
 
   });
+
 };
 
 const refreshGraph = () => {
@@ -438,6 +459,14 @@ g.x6-cell.x6-edge.x6-edge-selected path:nth-child(2) {
 }
 </style>
 <style scoped lang="scss">
+.contextMenu {
+  // z-index: 1002;
+  position: absolute;
+  left: 0;
+  top: 0;
+  background: white;
+}
+
 .x6 {
   display: flex;
   height: 100%;
@@ -457,6 +486,11 @@ g.x6-cell.x6-edge.x6-edge-selected path:nth-child(2) {
   .middle {
     flex-grow: 1;
     flex: 1;
+
+    .container-wrap {
+      width: 100%;
+      height: 100%;
+    }
   }
 
   .right {

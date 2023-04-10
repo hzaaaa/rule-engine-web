@@ -6,6 +6,7 @@ import { Snapline } from '@antv/x6-plugin-snapline'
 import { Clipboard } from '@antv/x6-plugin-clipboard'
 import { History } from '@antv/x6-plugin-history';
 import { Graph } from "@antv/x6";
+
 export default (graph: any) => {
     // #region 使用插件
     graph
@@ -239,6 +240,7 @@ export default (graph: any) => {
         },
         zIndex: 0,
     }, true)
+
     Graph.registerNode(
         "custom-rect",
         {
@@ -290,6 +292,17 @@ export default (graph: any) => {
                     },
                 ],
             },
+            tools: [
+                {
+                    name: 'button-remove',
+                    args: {
+                        x: '100%',
+                        y: 0,
+                        offset: { x: -10, y: 10 },
+                    },
+                },
+
+            ],
 
 
         },
