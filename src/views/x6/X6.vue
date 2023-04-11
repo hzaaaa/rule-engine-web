@@ -53,12 +53,12 @@ import { Graph, Shape } from "@antv/x6";
 import { onMounted, ref, watch } from "vue";
 import mockTreeDataResult from "./mock.json";
 import Hierarchy from "@antv/hierarchy";
-import rightClickContextmenu from './rightClickContextmenu.vue'
+
 
 import x6init, { test } from './x6init';
 
 
-import useClickOutside from './useClickOutside'
+
 
 
 let graph: any = null;
