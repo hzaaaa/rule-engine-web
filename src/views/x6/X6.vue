@@ -36,10 +36,11 @@
     </div>
     <Teleport to="body">
       <div class="contextMenu" ref="contentMenuRef" :style="{ display: contentMenuVisible ? '' : 'none', }"
-        contentMenuVisible="">
-        <div class="">1111111111111111111111111111111111</div>
-        <div class="">1111111111111111111111111111111111</div>
-        <div class="">1111111111111111111111111111111111</div>
+        v-clickOutside="contextMenuoOutsideClick">
+        <div class="contextMenu-item" @click="deleteNode">删除当前节点</div>
+        <div class="contextMenu-item" @click="">当前节点</div>
+        <div class="contextMenu-item" @click="">当前节点</div>
+
 
       </div>
     </Teleport>
@@ -152,31 +153,33 @@ const initGraph = (data: any) => {
 
 const data = { "cells": [{ "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "21077889-bb97-4f6d-9fbf-d75cc48634a1", "zIndex": 0, "source": { "cell": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "port": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }, "target": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "82790483-00b6-429b-a82a-2c53ff7972c0" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "12f70b77-269d-44b5-8311-f17161de554f", "zIndex": 0, "source": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, "target": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "e4d4aa99-53bd-4b74-a401-40a234742252", "zIndex": 0, "source": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, "target": { "cell": "080665f4-15b7-425f-9945-75fad0ea59ed", "port": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" } }, { "position": { "x": 430, "y": 118 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "开始" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }] }, "id": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "data": { "type": 3, "name": "开始节点" }, "zIndex": 3 }, { "position": { "x": 450, "y": 400 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "结束" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "top", "id": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" }] }, "id": "080665f4-15b7-425f-9945-75fad0ea59ed", "data": { "type": 3, "name": "结束节点" }, "zIndex": 4 }, { "position": { "x": 310, "y": 240 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程1" }, "img": { "xlink:href": "https://mdn.alipayobjects.com/huamei_f4t1bn/afts/img/A*RXnuTpQ22xkAAAAAAAAAAAAADtOHAQ/original" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, { "group": "top", "id": "82790483-00b6-429b-a82a-2c53ff7972c0" }] }, "id": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 5 }, { "position": { "x": 460, "y": 320 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程2" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, { "group": "top", "id": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" }] }, "id": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 6 }] };
 
-const contentMenuRef = <any>ref(null);
-const isClickOutside = useClickOutside(contentMenuRef)
-let contentMenuVisible = ref(false)
-watch(isClickOutside, () => {
-  if (contentMenuVisible.value && isClickOutside.value) {  //下拉展开且点击位置为组件外的区域隐藏
-    contentMenuVisible.value = false
+// #region 右键节点相关
+const contentMenuRef = <any>ref(null)
+let contentMenuVisible = ref(false);
+let currentRightClickSelectedNode = <any>null;
+const contextMenuoOutsideClick = () => {
+  if (contentMenuVisible.value) {  //下拉展开且点击位置为组件外的区域隐藏
+    contentMenuVisible.value = false;
+    currentRightClickSelectedNode = null;
   }
-})
-
+}
+const deleteNode = () => {
+  if (currentRightClickSelectedNode) {
+    graph.removeNode(currentRightClickSelectedNode);
+    contextMenuoOutsideClick();
+  }
+}
+// #endregion
 const bindEvents = () => {
   graph.on("node:contextmenu", (obj: any) => {
-
-
-    // contentMenuRef.value.$refs.triggeringElementRef = obj.e.target;
     contentMenuVisible.value = true;
-    isClickOutside.value = false;
-
     contentMenuRef.value.style.left = obj.e.pageX + 'px';
     contentMenuRef.value.style.top = obj.e.pageY + 'px';
+    currentRightClickSelectedNode = obj.node;
 
   });
   graph.on("node:click", ({ node }: any) => {
-    // console.log("e", e);
-    // console.log("x", x);
-    // console.log("y", y);
+
     console.log("node", node.data);
     //
     if (node.data) {
@@ -465,6 +468,15 @@ g.x6-cell.x6-edge.x6-edge-selected path:nth-child(2) {
   left: 0;
   top: 0;
   background: white;
+  cursor: pointer;
+
+  &-item {
+    padding: 2px;
+
+    &:hover {
+      color: #6398ff;
+    }
+  }
 }
 
 .x6 {
