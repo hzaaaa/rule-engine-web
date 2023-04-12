@@ -1,11 +1,13 @@
-import { Stencil } from '@antv/x6-plugin-stencil';
+import { Stencil, } from '@antv/x6-plugin-stencil';
+import { Dnd } from "@antv/x6-plugin-dnd";
 import { Keyboard } from '@antv/x6-plugin-keyboard';
 import { Transform } from '@antv/x6-plugin-transform'
 import { Selection } from '@antv/x6-plugin-selection'
 import { Snapline } from '@antv/x6-plugin-snapline'
 import { Clipboard } from '@antv/x6-plugin-clipboard'
 import { History } from '@antv/x6-plugin-history';
-import { Graph } from "@antv/x6";
+import { MiniMap } from "@antv/x6-plugin-minimap";
+import { Graph, Node } from "@antv/x6";
 
 export default (graph: any) => {
     // #region 使用插件
@@ -44,6 +46,11 @@ export default (graph: any) => {
                 enabled: true,
             }),
         )
+        .use(
+            new MiniMap({
+                container: <HTMLElement | undefined>document.getElementById("minimap"),
+            })
+        );
     // #endregion
 
     // #region 初始化 stencil
@@ -77,6 +84,29 @@ export default (graph: any) => {
             // center: true,
             // columnWidth:
         },
+        validateNode: (droppingNode: Node, options: Dnd.ValidateNodeOptions) => {
+            let onlyNodeTypeList = <Array<any>>[1, 3];//只能出现一次的node type
+            let isOnly = onlyNodeTypeList.includes(droppingNode.data.type);
+            if (isOnly) {
+
+                let hadNodeList = graph.getNodes();
+                hadNodeList = hadNodeList.filter((item: any) => {
+                    return item.data.type === droppingNode.data.type
+                })
+                if (hadNodeList.length !== 0) {
+                    console.log('禁止拖进画板')
+
+
+                    return false
+                } else {
+                    return true
+                }
+            } else {
+                return true
+            }
+
+
+        }
     });
     document.getElementById("stencil")!.appendChild(stencil.container);
     // #endregion
@@ -84,7 +114,10 @@ export default (graph: any) => {
     // #region 快捷键与事件
     // copy and paste
     graph.bindKey(["meta+c", "ctrl+c"], () => {
-        const cells = graph.getSelectedCells();
+        let cells = graph.getSelectedCells();
+        cells = cells.filter((element: any) => {
+            return element.data.type !== 'start'; //待修改 应为only list
+        });
         if (cells.length) {
             graph.copy(cells);
         }
@@ -97,6 +130,9 @@ export default (graph: any) => {
     });
     graph.bindKey(["meta+v", "ctrl+v"], () => {
         if (!graph.isClipboardEmpty()) {
+
+
+
             const cells = graph.paste({ offset: 32 });
             graph.cleanSelection();
             graph.select(cells);
@@ -105,14 +141,14 @@ export default (graph: any) => {
 
     //undo redo
     graph.bindKey(["meta+z", "ctrl+z"], () => {
-        if (graph.history.canUndo()) {
-            graph.history.undo();
-        }
+        // if (graph.history.canUndo()) {
+        graph.undo();
+        // }
     });
     graph.bindKey(["meta+shift+z", "ctrl+shift+z"], () => {
-        if (graph.history.canRedo()) {
-            graph.history.redo();
-        }
+        // if (graph.history.canRedo()) {
+        graph.history.redo();
+        // }
     });
 
     //delete
@@ -123,8 +159,11 @@ export default (graph: any) => {
         }
     });
     graph.bindKey("delete", () => {
-        const cells = graph.getSelectedCells();
+        let cells = graph.getSelectedCells();
         if (cells.length) {
+            cells = cells.filter((element: any) => {
+                return element.data.type !== 'start';
+            });
             graph.removeCells(cells);
         }
     });
@@ -151,7 +190,7 @@ export default (graph: any) => {
     // #region 初始化图形
     // 连接桩
     const ports = {
-        groups: {
+        groups: { //上右下左 为 port1 port2 port3 port4
             top: {
                 position: "top",
                 attrs: {
@@ -340,7 +379,7 @@ export default (graph: any) => {
         true
     );
     Graph.registerNode(
-        "custom-circle",
+        "custom-circle-start",
         {
             inherit: "circle",
             width: 45,
@@ -358,33 +397,67 @@ export default (graph: any) => {
             },
             ports: {
                 ...ports,
+                items: [
+                    {
+                        id: 'port3',
+                        group: 'bottom',
+                    },
+
+                ],
             },
+            label: "开始",
+            data: {
+                type: 'start',
+                name: "开始节点",
+            },
+
+        },
+        true
+    );
+    Graph.registerNode(
+        "custom-circle-end",
+        {
+            inherit: "circle",
+            width: 45,
+            height: 45,
+            attrs: {
+                body: {
+                    strokeWidth: 1,
+                    stroke: "#5F95FF",
+                    fill: "#EFF4FF",
+                },
+                text: {
+                    fontSize: 12,
+                    fill: "#262626",
+                },
+            },
+            ports: {
+                ...ports,
+                items: [
+                    {
+                        id: 'port1',
+                        group: 'top',
+                    },
+
+                ],
+            },
+            label: "结束",
+            data: {
+                type: 'end',
+                name: "结束节点",
+            },
+
+
         },
         true
     );
 
-    const r1 = graph.createNode({
-        shape: "custom-circle",
-        label: "开始",
-        data: {
-            type: 3,
-            name: "开始节点",
-        },
-        ports: {
-            items: [
-                {
-                    id: 'port3',
-                    group: 'bottom',
-                },
 
-            ],
-        },
-    });
     const r2 = graph.createNode({
         shape: "custom-rect",
         label: "过程1",
         data: {
-            type: 2,
+            type: 1,
             name: "计算节点",
             expression: "",
         },
@@ -441,24 +514,8 @@ export default (graph: any) => {
     //   },
     //   label: "其他节点",
     // });
-    const r6 = graph.createNode({
-        shape: "custom-circle",
-        label: "结束",
-        data: {
-            type: 3,
-            name: "结束节点",
-        },
-        ports: {
-            items: [
-                {
-                    id: 'port1',
-                    group: 'top',
-                },
 
-            ],
-        },
-    });
-    stencil.load([r1, r2, r3, r6], "group1");//r4, r5,
+    stencil.load([r2, r3], "group1");//r4, r5,
     // #endregion
     // #endregion
 

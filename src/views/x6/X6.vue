@@ -6,6 +6,20 @@
     <div class="middle">
       <div class="container-wrap">
         <div id="container"></div>
+        <div id="minimap" class="minimap"></div>
+        <div id="" class="top-tools ">
+          <el-icon>
+            <FullScreen />
+          </el-icon>
+          <el-icon>
+            <ZoomIn />
+          </el-icon>
+          <el-icon>
+            <ZoomOut />
+          </el-icon>
+
+
+        </div>
       </div>
     </div>
     <div class="right">
@@ -49,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+
 import { Graph, Shape } from "@antv/x6";
 import { onMounted, ref, watch } from "vue";
 import mockTreeDataResult from "./mock.json";
@@ -138,20 +153,40 @@ const initGraph = (data: any) => {
       },
     },
   });
-  // #endregion
+
 
 
   x6init(graph);
 
 
   // 开始{id: 1, }，多个计算节点，
+  let tempData = [
+    {
+      id: "node-start",
+      x: 200,
+      y: 100,
 
+      // label: "Hello1",
+      shape: "custom-circle-start",
 
-  graph.fromJSON(data);
+    },
+    {
+      id: "node-end",
+      x: 200,
+      y: 300,
+
+      // label: "Hello1",
+      shape: "custom-circle-end",
+
+    },
+  ];
+
+  // graph.fromJSON(data);
+  graph.fromJSON(tempData);
   bindEvents();
 };
 
-const data = { "cells": [{ "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "21077889-bb97-4f6d-9fbf-d75cc48634a1", "zIndex": 0, "source": { "cell": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "port": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }, "target": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "82790483-00b6-429b-a82a-2c53ff7972c0" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "12f70b77-269d-44b5-8311-f17161de554f", "zIndex": 0, "source": { "cell": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "port": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, "target": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" } }, { "shape": "edge", "attrs": { "line": { "stroke": "#A2B1C3", "targetMarker": { "name": "block", "width": 12, "height": 8 } } }, "id": "e4d4aa99-53bd-4b74-a401-40a234742252", "zIndex": 0, "source": { "cell": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "port": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, "target": { "cell": "080665f4-15b7-425f-9945-75fad0ea59ed", "port": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" } }, { "position": { "x": 430, "y": 118 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "开始" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "154b402b-d6ca-4aad-b6e7-3ca130a8f5b2" }] }, "id": "36dbe407-fc7c-42df-8ed3-7cfbbe62ac21", "data": { "type": 3, "name": "开始节点" }, "zIndex": 3 }, { "position": { "x": 450, "y": 400 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "结束" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "top", "id": "73ef7997-1aa9-4be8-9d82-d9a8011558d5" }] }, "id": "080665f4-15b7-425f-9945-75fad0ea59ed", "data": { "type": 3, "name": "结束节点" }, "zIndex": 4 }, { "position": { "x": 310, "y": 240 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程1" }, "img": { "xlink:href": "https://mdn.alipayobjects.com/huamei_f4t1bn/afts/img/A*RXnuTpQ22xkAAAAAAAAAAAAADtOHAQ/original" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "c08eab2b-12fa-4c5c-a669-d88dbd5488ad" }, { "group": "top", "id": "82790483-00b6-429b-a82a-2c53ff7972c0" }] }, "id": "58847214-b521-4f8a-b17e-5a11f8cf0abb", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 5 }, { "position": { "x": 460, "y": 320 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程2" } }, "visible": true, "shape": "custom-rect", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "magnet": true, "r": 3 } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "magnet": true, "r": 3 } } } }, "items": [{ "group": "bottom", "id": "ee77b72e-99d7-4e9a-9a55-e7b4fdc2a98b" }, { "group": "top", "id": "00a9bfab-9a22-4ca3-8ccb-55f4a4eb2dc9" }] }, "id": "bac63e8e-863a-4fb3-9bb2-da1fc73ad351", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 6 }] };
+const data = { "cells": [{ "shape": "my-edge", "zIndex": 0, "id": "24c61af6-ee08-4916-957a-15a9f7d1c87c", "source": { "cell": "275ac7df-aa68-42cd-8f14-615cc287e52a", "port": "port3" }, "target": { "cell": "3ad48b34-7aa8-4732-8a22-3e7336b73905", "port": "port1" } }, { "shape": "my-edge", "zIndex": 0, "id": "b164f66f-33ec-4f02-90fe-2f4caea236d0", "source": { "cell": "3ad48b34-7aa8-4732-8a22-3e7336b73905", "port": "port3" }, "target": { "cell": "204a6d72-33a3-47bb-a1e5-92f1f419b5e6", "port": "port3" } }, { "shape": "my-edge", "zIndex": 0, "id": "1dbf6859-dc0f-4050-9e02-9fb7292700f0", "source": { "cell": "204a6d72-33a3-47bb-a1e5-92f1f419b5e6", "port": "port1" }, "target": { "cell": "64880118-2cfc-49c7-8382-572c7a153908", "port": "port1" } }, { "position": { "x": 385, "y": 90 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "开始" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "right": { "position": "right", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "left": { "position": "left", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } } }, "items": [{ "id": "port3", "group": "bottom" }] }, "id": "275ac7df-aa68-42cd-8f14-615cc287e52a", "data": { "type": "start", "name": "开始节点" }, "zIndex": 7 }, { "position": { "x": 385, "y": 413 }, "size": { "width": 45, "height": 45 }, "attrs": { "text": { "text": "结束" } }, "visible": true, "shape": "custom-circle", "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "right": { "position": "right", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "left": { "position": "left", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } } }, "items": [{ "id": "port1", "group": "top" }] }, "id": "64880118-2cfc-49c7-8382-572c7a153908", "data": { "type": "end", "name": "结束节点" }, "zIndex": 8 }, { "position": { "x": 240, "y": 230 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程1" }, "img": { "xlink:href": "https://mdn.alipayobjects.com/huamei_f4t1bn/afts/img/A*RXnuTpQ22xkAAAAAAAAAAAAADtOHAQ/original" } }, "visible": true, "shape": "custom-rect", "tools": { "items": [{ "name": "button-remove", "args": { "x": "100%", "y": 0, "offset": { "x": -10, "y": 10 } } }] }, "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "right": { "position": "right", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "left": { "position": "left", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } } }, "items": [{ "group": "top", "id": "port1" }, { "group": "bottom", "id": "port3" }] }, "id": "3ad48b34-7aa8-4732-8a22-3e7336b73905", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 9 }, { "position": { "x": 470, "y": 310 }, "size": { "width": 120, "height": 40 }, "attrs": { "text": { "text": "过程2" } }, "visible": true, "shape": "custom-rect", "tools": { "items": [{ "name": "button-remove", "args": { "x": "100%", "y": 0, "offset": { "x": -10, "y": 10 } } }] }, "ports": { "groups": { "top": { "position": "top", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "right": { "position": "right", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "bottom": { "position": "bottom", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } }, "left": { "position": "left", "attrs": { "circle": { "r": 3, "magnet": true, "stroke": "#5f95ff", "strokeWidth": 1, "fill": "#ffffff", "style": {} } } } }, "items": [{ "group": "bottom", "id": "port1" }, { "group": "top", "id": "port3" }] }, "id": "204a6d72-33a3-47bb-a1e5-92f1f419b5e6", "data": { "type": 2, "name": "计算节点", "expression": "" }, "zIndex": 10 }] };
 
 // #region 右键节点相关
 const contentMenuRef = <any>ref(null)
@@ -165,8 +200,12 @@ const contextMenuoOutsideClick = () => {
 }
 const deleteNode = () => {
   if (currentRightClickSelectedNode) {
-    graph.removeNode(currentRightClickSelectedNode);
-    contextMenuoOutsideClick();
+    if (currentRightClickSelectedNode.data.type === 'start') {
+      console.log('开始节点不能被删除')
+    } else {
+      graph.removeCell(currentRightClickSelectedNode);
+      contextMenuoOutsideClick();
+    }
   }
 }
 // #endregion
@@ -502,6 +541,40 @@ g.x6-cell.x6-edge.x6-edge-selected path:nth-child(2) {
     .container-wrap {
       width: 100%;
       height: 100%;
+      position: relative;
+
+      .minimap {
+        position: absolute;
+        right: 0;
+        bottom: 0;
+        width: 300px;
+        height: 200px;
+        z-index: 1;
+        // background: red;
+      }
+
+      .top-tools {
+        position: absolute;
+        right: 0;
+        left: 0;
+        margin: auto;
+        top: 10px;
+        width: 300px;
+        height: 22px;
+        padding: 10px 20px;
+        background: #fff;
+        box-shadow: 1px 1px 4px rgba(0, 0, 0, .08);
+
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+
+        .el-icon {
+          font-size: 22px;
+          color: #515a6e;
+          cursor: pointer;
+        }
+      }
     }
   }
 
