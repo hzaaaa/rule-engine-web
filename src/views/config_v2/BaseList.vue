@@ -140,7 +140,7 @@ import {
   getBaseRollbackApi,
   getBaseExportApi,
   postBaseImportApi,
-} from "@/api/engine/engine";
+} from "@/api/engine/engine_v2";
 import { reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { copyTextToClipboard } from "@/utils/util";
@@ -217,7 +217,7 @@ const refreshTableData = () => {
 };
 refreshTableData();
 const jumpToConfDetail = (row: any) => {
-  router.push(`/conf/detail?appId=${appId}&baseId=${row.id}&address=server`);
+  router.push(`/conf/detail_v2?appId=${appId}&baseId=${row.id}&address=server`);
 };
 const backup = (row: any) => {
   const { id } = row;

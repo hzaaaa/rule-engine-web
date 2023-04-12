@@ -51,12 +51,12 @@
       ]
     },
     {
-      "path": "/app/list",
-      "name": "AppList",
-      "component": "/config/AppList",
+      "path": "/app/list_v2",
+      "name": "AppList_v2",
+      "component": "/config_v2/AppList",
       "meta": {
         "icon": "MessageBox",
-        "title": "规则配置",
+        "title": "规则配置_v2",
         "isLink": "",
         "isHide": false,
         "isFull": false,
@@ -65,13 +65,13 @@
       },
       "children": [
         {
-          "path": "/base/list",
-          "name": "BaseList",
-          "component": "/config/BaseList",
+          "path": "/base/list_v2",
+          "name": "BaseList_v2",
+          "component": "/config_v2/BaseList",
           "meta": {
             "icon": "MessageBox",
-            "title": "Base列表",
-            "activeMenu": "/app/list",
+            "title": "Base列表_v2",
+            "activeMenu": "/app/list_v2",
             "isLink": "",
             "isHide": true,
             "isFull": false,
@@ -80,13 +80,13 @@
           },
           "children": [
             {
-              "path": "/conf/detail",
-              "name": "ConfDetail",
-              "component": "/config/ConfDetail",
+              "path": "/conf/detail_v2",
+              "name": "ConfDetail_v2",
+              "component": "/config_v2/ConfDetail",
               "meta": {
                 "icon": "MessageBox",
-                "title": "Conf详情",
-                "activeMenu": "/app/list",
+                "title": "Conf详情_v2",
+                "activeMenu": "/app/list_v2",
                 "isLink": "",
                 "isHide": true,
                 "isFull": false,

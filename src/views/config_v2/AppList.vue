@@ -30,7 +30,7 @@
 <script setup lang="ts">
 import { reactive, ref } from "vue";
 import { useRouter } from "vue-router";
-import { getAppListApi, postAppAddApi } from "@/api/engine/engine";
+import { getAppListApi, postAppAddApi } from "@/api/engine/engine_v2";
 
 const router = useRouter();
 
@@ -49,7 +49,7 @@ getAppListApi().then((res) => {
   tableData.value = res.data.list;
 });
 const jumpToBaseList = (appId: number) => {
-  router.push(`/base/list?appId=${appId}`);
+  router.push(`/base/list_v2?appId=${appId}`);
 };
 
 /**
