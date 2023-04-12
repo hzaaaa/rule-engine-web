@@ -7,7 +7,7 @@ import { initDynamicRouter } from "./dynamicRouter";
 const routes: RouteRecordRaw[] = [
   {
     path: "/",
-    redirect: "/app/list",
+    redirect: "/app/list_v2",
   },
   {
     path: "/home",

@@ -1010,6 +1010,7 @@ const copyJSON = (jsonObj: any) => {
       line-height: 40px;
     }
     .el-row {
+      align-items: center;
       margin-bottom: 4px;
     }
     .label {
