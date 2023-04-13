@@ -51,7 +51,7 @@
                 <el-input v-model="addNodeModelForm.name"></el-input>
               </el-row>
               <el-row>
-                <div class="label">nodeType：</div>
+                <div class="label">节点类型：</div>
                 <el-select v-model="addNodeModelForm.nodeType" @change="onNodeTypeChangeNew" style="width: 100%">
                   <el-option
                     v-for="nodeType in nodeTypeList"
@@ -73,7 +73,7 @@
                 </el-select>
               </el-row>
               <el-row v-if="selectedNodeType !== 1 && selectedNodeType !== 13">
-                <div class="label">confName：</div>
+                <div class="label">算子类型：</div>
                 <el-select v-model="addNodeModelForm.confName" @change="onConfNameChange" style="width: 100%">
                   <el-option
                     v-for="confClass in confClassList"
@@ -126,12 +126,26 @@
                 <div class="label">节点类型：</div>
                 <div>{{ child.showConf.nodeType }}</div>
               </el-row>
-              <el-row v-if="child?.showConf?.confField" class="jsonbox">
+              <el-row v-if="child?.showConf?.confField || child?.showConf?.confField === ''" class="jsonbox">
                 <div class="label">配置JSON：</div>
-                <vue-json-pretty v-model:data="child.showConf.confField" editable></vue-json-pretty>
-                <el-button type="primary" link size="small" class="tips" @click="copyJSON(child.showConf.confField)"
+                <!-- 第三版 vue-codemirror 编辑器插件，json可格式化，可修改json全文，可自由添加子属性 -->
+                <codemirror
+                  v-model="child.showConf.confField"
+                  :extensions="extensions"
+                  @ready="beautifyCurField(child.showConf)"
+                />
+                <div class="tips">
+                  <el-button type="primary" link size="small" @click="copyCurField(child.showConf.confField)"
+                    >复制 JSON</el-button
+                  >
+                  <el-button type="primary" link size="small" @click="beautifyCurField(child.showConf)">美化</el-button>
+                </div>
+                <!-- 第二版 vue-json-pretty 插件，json可格式化，只可修改value值且新增的子对象也会被识别为字符串 -->
+                <!-- <vue-json-pretty v-model:data="child.showConf.confField" editable></vue-json-pretty> -->
+                <!-- <el-button type="primary" link size="small" class="tips" @click="copyJSON(child.showConf.confField)"
                   >复制 JSON</el-button
-                >
+                > -->
+                <!-- 第一版 input 框，json无格式化 -->
                 <!-- <el-input v-model="child.showConf.confField" type="textarea" :autosize="{ minRows: 5, maxRows: 20 }"></el-input> -->
               </el-row>
             </el-card>
@@ -198,8 +212,14 @@ import {
   postBaseImportApi,
 } from "@/api/engine/engine_v2";
 import { copyTextToClipboard } from "@/utils/util";
-import VueJsonPretty from "vue-json-pretty";
-import "vue-json-pretty/lib/styles.css";
+// import VueJsonPretty from "vue-json-pretty";
+// import "vue-json-pretty/lib/styles.css";
+import { Codemirror } from "vue-codemirror";
+import { json, jsonParseLinter } from "@codemirror/lang-json";
+import { linter, lintGutter } from "@codemirror/lint";
+import { tags as t } from "@lezer/highlight";
+import { HighlightStyle, syntaxHighlighting } from "@codemirror/language";
+import { EditorView } from "@codemirror/view";
 
 const route = useRoute();
 const router = useRouter();
@@ -725,7 +745,8 @@ const jsonToGraph = (detailsData: any) => {
     };
     // console.log("2-treeData", treeData);
 
-    // 递归将节点中的任意深度的 showConf 中的 confField 转为对象
+    // 递归将节点中的任意深度的 showConf 中的 confField 转为对象，用于 vue-json-pretty插件
+    /*
     const jsonToObj = (child: any) => {
       if (child.showConf.confField) {
         try {
@@ -751,6 +772,7 @@ const jsonToGraph = (detailsData: any) => {
     treeData.children.forEach((child: any) => {
       jsonToObj(child);
     });
+    */
     // console.log("treeData", treeData);
 
     initTree(treeData);
@@ -939,7 +961,7 @@ const submitEditChildNode = (child: any) => {
     editType: 2,
     selectId: child.showConf.nodeId,
   };
-  if (child.showConf.confField) params.confField = JSON.stringify(child.showConf.confField);
+  if (child.showConf.confField) params.confField = JSON.stringify(JSON.parse(child.showConf.confField));
   postConfEditApi(params).then((res) => {
     if (res.code === 200) {
       ElMessage.success("success");
@@ -969,14 +991,63 @@ const deleteChildNode = (child: any) => {
       console.error("postConfEditApi 错误", err);
     });
 };
-const copyJSON = (jsonObj: any) => {
+
+/**
+ * codemirror 配置
+ */
+function svg(content: string, attrs = `viewBox="0 0 1024 1024" width="40" height="40"`) {
+  return `url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" ${attrs}>${encodeURIComponent(content)}</svg>')`;
+}
+// import "@/assets/images/code-error.svg";
+const myTheme = EditorView.theme({
+  ".cm-lint-marker-error": {
+    // content: svg(`<circle cx="20" cy="20" r="15" fill="#f87" stroke="#f43" stroke-width="6"/>`),
+    // content: svg(`<path fill="#fe8" stroke="#fd7" stroke-width="6" stroke-linejoin="round" d="M20 6L37 35L3 35Z"/>`),
+    content: svg(
+      `<path d="M0 512a512 512 0 1 0 1024 0A512 512 0 0 0 0 512z" fill="#FF4948" p-id="25967"></path><path d="M601.486222 512.796444l177.379556 177.379556a62.691556 62.691556 0 0 1-88.746667 88.689778l-177.322667-177.379556-177.436444 177.379556a62.691556 62.691556 0 0 1-88.632889-88.746667l177.379556-177.322667-177.379556-177.436444a62.691556 62.691556 0 1 1 88.632889-88.632889l177.493333 177.379556 177.322667-177.379556a62.691556 62.691556 0 0 1 88.689778 88.632889l-177.379556 177.493333z" fill="#FFFFFF" p-id="25968"></path>`
+    ),
+  },
+});
+const myHighlightStyle = HighlightStyle.define([
+  {
+    tag: t.string,
+    color: "#EC7063", // 2AA198 CE9178
+  },
+  {
+    tag: t.number,
+    color: "#28B463", // D33682 B5CEA8 45999B
+  },
+  {
+    tag: [t.keyword, t.operator, t.punctuation],
+    color: "#859900", //
+  },
+  {
+    tag: [t.definitionKeyword, t.modifier],
+    color: "#073642",
+    fontWeight: "bold",
+  },
+  {
+    tag: [t.bool, t.null],
+    color: "#2874A6", // B58900 #569CD6
+  },
+  {
+    tag: t.propertyName,
+    color: "#5499C7", // 268BD2
+  },
+]);
+const extensions = [json(), lintGutter(), linter(jsonParseLinter()), myTheme, syntaxHighlighting(myHighlightStyle)];
+const copyCurField = (jsonstr: string) => {
+  let str = "";
+  if (jsonstr !== "") {
+    str = JSON.stringify(JSON.parse(jsonstr));
+  }
   if (navigator.clipboard) {
     // 新api，安全限制较多，https 或 localhost 才可用
-    navigator.clipboard.writeText(JSON.stringify(jsonObj));
+    navigator.clipboard.writeText(str);
   } else {
     // 传统api，随时可能会废弃
     const tempInput = document.createElement("input");
-    tempInput.setAttribute("value", JSON.stringify(jsonObj));
+    tempInput.setAttribute("value", str);
     document.body.append(tempInput);
     tempInput.select();
     document.execCommand("copy");
@@ -984,6 +1055,14 @@ const copyJSON = (jsonObj: any) => {
   }
   ElMessage.success("复制成功");
 };
+const beautifyCurField = (curShowConf: any) => {
+  if (curShowConf.confField === "") return; // 当 json 为空字符串时直接返回，避免 format 时 JSON.parse 报错
+  curShowConf.confField = formatJsonstr(curShowConf.confField);
+};
+const formatJsonstr = (jsonstr: string) => {
+  return JSON.stringify(JSON.parse(jsonstr), null, 2);
+};
+// log('ready', $event)
 </script>
 
 <style scoped lang="scss">
@@ -1067,16 +1146,44 @@ const copyJSON = (jsonObj: any) => {
         display: flex;
         position: relative;
         flex-direction: column;
-        .vjs-tree {
-          box-sizing: border-box;
-          padding: 2px;
-          border: 1px solid #eeeeee;
-          border-radius: 8px;
+        // .vjs-tree {
+        //   box-sizing: border-box;
+        //   padding: 2px;
+        //   border: 1px solid #eeeeee;
+        //   border-radius: 8px;
+        // }
+        .v-codemirror {
+          display: block !important;
+          overflow-y: auto;
+          width: 100%;
+          max-height: 600px;
         }
         .tips {
           position: absolute;
           right: 0;
           top: 0;
+        }
+
+        /* 滚动条整体 */
+        ::-webkit-scrollbar {
+          border-right: 1px solid #eeeeee;
+          width: 8px;
+          height: 8px;
+          background-color: #ffffff;
+        }
+
+        /* 滚动条轨道 */
+        ::-webkit-scrollbar-track {
+          border-radius: 10px;
+          background-color: #f6f6f6;
+          cursor: pointer;
+        }
+
+        /* 滚动条滑块 */
+        ::-webkit-scrollbar-thumb {
+          border-radius: 10px;
+          background-color: #e4e4e4;
+          cursor: pointer;
         }
       }
     }
