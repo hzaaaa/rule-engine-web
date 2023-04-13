@@ -9,9 +9,9 @@
       <el-button @click="exportJson">导出</el-button>
       <el-button @click="downloadImage">下载图片</el-button> -->
     </div>
-    <div class="box">
+    <div class="box" ref="boxPanel">
       <!-- 节点详情区 -->
-      <div class="left">
+      <div class="left" :style="'width: ' + leftPanelWidthPercent + '%'">
         <div class="info">
           <h4>节点信息</h4>
           <el-row v-if="currentNodeConf">
@@ -101,9 +101,13 @@
           </div>
         </div>
       </div>
+      <!-- 左侧分隔栏，支持左右拖动 -->
+      <div class="resizer" @mousedown="handleLeftMouseDown"></div>
       <div id="container"></div>
+      <!-- 右侧分隔栏，支持左右拖动 -->
+      <div class="resizer" @mousedown="handleMouseDown"></div>
       <!-- 叶子节点区 -->
-      <div class="right">
+      <div class="right" ref="rightPanel" :style="'width: ' + rigntPanelWidthPercent + '%'">
         <el-scrollbar>
           <div v-for="child in childNodes" :key="child.id">
             <el-card class="card" shadow="hover">
@@ -153,7 +157,7 @@
         </el-scrollbar>
       </div>
       <!-- 图例 -->
-      <div class="legend">
+      <div class="legend" :style="'left: ' + (leftPanelWidthPercent + 1) + '%'">
         <div class="legend-title">图例</div>
         <div class="legend-item">
           <div class="legend-item-none"></div>
@@ -362,6 +366,8 @@ const initTree = (treeData: any[]) => {
       width,
       height,
       autoPaint: true,
+      minZoom: 0.3,
+      maxZoom: 2,
       modes: {
         default: [
           /*
@@ -1063,6 +1069,47 @@ const formatJsonstr = (jsonstr: string) => {
   return JSON.stringify(JSON.parse(jsonstr), null, 2);
 };
 // log('ready', $event)
+
+/**
+ * 分隔栏，支持左右拖动
+ */
+const boxPanel = ref();
+const rigntPanelWidthPercent = ref(29);
+const leftPanelWidthPercent = ref(20);
+const handleMouseDown = () => {
+  document.addEventListener("mousemove", handleMouseMove);
+  document.addEventListener("mouseup", handleMouseUp);
+};
+const handleMouseMove = (e: MouseEvent) => {
+  const clientRect = boxPanel.value.getBoundingClientRect();
+  const offset = e.pageX - clientRect.left + 18;
+  rigntPanelWidthPercent.value = 100 - (offset / clientRect.width) * 100;
+  if (rigntPanelWidthPercent.value < 20) rigntPanelWidthPercent.value = 20;
+  if (rigntPanelWidthPercent.value > 50) rigntPanelWidthPercent.value = 50;
+};
+const handleMouseUp = () => {
+  document.removeEventListener("mousemove", handleMouseMove);
+  if (!graph || graph.get("destroyed")) return;
+  if (!container || !container.scrollWidth || !container.scrollHeight) return;
+  graph.changeSize(container.scrollWidth, container.scrollHeight);
+};
+const handleLeftMouseDown = () => {
+  document.addEventListener("mousemove", handleLeftMouseMove);
+  document.addEventListener("mouseup", handleLeftMouseUp);
+};
+const handleLeftMouseMove = (e: MouseEvent) => {
+  const clientRect = boxPanel.value.getBoundingClientRect();
+  const offset = e.pageX - clientRect.left - 8;
+  leftPanelWidthPercent.value = (offset / clientRect.width) * 100;
+  if (leftPanelWidthPercent.value < 16) leftPanelWidthPercent.value = 16;
+  if (leftPanelWidthPercent.value > 30) leftPanelWidthPercent.value = 30;
+};
+const handleLeftMouseUp = () => {
+  document.removeEventListener("mousemove", handleLeftMouseMove);
+  if (!graph || graph.get("destroyed")) return;
+  if (!container || !container.scrollWidth || !container.scrollHeight) return;
+  graph.changeSize(container.scrollWidth, container.scrollHeight);
+};
 </script>
 
 <style scoped lang="scss">
@@ -1074,6 +1121,7 @@ const formatJsonstr = (jsonstr: string) => {
   display: flex;
   position: relative;
   margin-top: 8px;
+  width: 100%;
   height: calc(100% - 40px);
   background-color: #ffffff;
   .left {
@@ -1081,7 +1129,7 @@ const formatJsonstr = (jsonstr: string) => {
     flex-direction: column;
     flex-shrink: 0;
     padding: 4px;
-    border-right: 1px solid #eeeeee;
+    // border-right: 1px solid #eeeeee;
     width: 20%;
     h4 {
       margin: 0;
@@ -1116,16 +1164,25 @@ const formatJsonstr = (jsonstr: string) => {
       }
     }
   }
+  .resizer {
+    z-index: 2;
+    flex-shrink: 0;
+    width: 2px;
+    background-color: #dddddd;
+    cursor: ew-resize;
+    user-select: none;
+  }
   .right {
     overflow: hidden;
+    z-index: 1;
     flex-shrink: 0;
     padding: 8px;
-    border-left: 1px solid #dddddd;
-    width: 30%;
-    // background-color: #eeeeee;
+    background-color: #ffffff;
+    // border-left: 1px solid #dddddd;
+    // width: 30%;
     .card {
       margin-bottom: 12px;
-      background-color: rgb(255 255 255 / 50%);
+      background-color: #ffffff;
       font-size: 14px;
       color: #333333;
       &-header {
@@ -1190,7 +1247,7 @@ const formatJsonstr = (jsonstr: string) => {
   }
   .legend {
     position: absolute;
-    left: 21%;
+    // left: 21%;
     top: 0;
     box-sizing: border-box;
     padding: 4px;
@@ -1269,7 +1326,13 @@ const formatJsonstr = (jsonstr: string) => {
 }
 #container {
   position: relative;
-  width: 100%;
+  // width: 100%;
+  flex-grow: 1;
+  flex-shrink: 1;
+  :deep(canvas) {
+    position: absolute;
+    z-index: 0;
+  }
 }
 .exportData {
   word-wrap: break-word;
