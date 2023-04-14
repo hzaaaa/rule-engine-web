@@ -24,7 +24,7 @@
           </el-row>
           <el-row v-if="currentNodeConf">
             <div class="label">节点类型：</div>
-            <div>{{ currentNodeConf.nodeType }}</div>
+            <div>{{ nodeTypeEnum[currentNodeConf.nodeType as keyof typeof nodeTypeEnum] ?? "" }}</div>
           </el-row>
           <!-- <el-row v-if="currentNodeConf?.confField">
             <div class="label">配置JSON：</div>
@@ -128,7 +128,7 @@
               </el-row>
               <el-row>
                 <div class="label">节点类型：</div>
-                <div>{{ child.showConf.nodeType }}</div>
+                <div>{{ nodeTypeEnum[child.showConf.nodeType as keyof typeof nodeTypeEnum] ?? "" }}</div>
               </el-row>
               <el-row v-if="child?.showConf?.confField || child?.showConf?.confField === ''" class="jsonbox">
                 <div class="label">配置JSON：</div>
@@ -798,6 +798,13 @@ onMounted(() => {
 /**
  * 节点操作区
  */
+const nodeTypeEnum = {
+  0: "根节点",
+  6: "表达式计算算子",
+  14: "操作算子",
+  15: "变量算子",
+  16: "参数绑定算子",
+};
 const nodeTypeList = [
   // { name: "Relation", id: 1 },
   // { name: "Flow", id: 5 },
@@ -1248,7 +1255,7 @@ const handleLeftMouseUp = () => {
   .legend {
     position: absolute;
     // left: 21%;
-    top: 0;
+    top: 8px;
     box-sizing: border-box;
     padding: 4px;
     border: 1px solid #eeeeee;
