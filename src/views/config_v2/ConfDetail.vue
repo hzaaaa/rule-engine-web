@@ -5,6 +5,7 @@
       <el-button @click="router.back()">返回</el-button>
       <el-button type="primary" @click="release">发布</el-button>
       <el-button type="danger" @click="confUpdateClean">清除</el-button>
+      <span style="margin-left: 12px; font-weight: 700">{{ modelName }}</span>
       <!-- <el-button @click="importJson">导入</el-button>
       <el-button @click="exportJson">导出</el-button>
       <el-button @click="downloadImage">下载图片</el-button> -->
@@ -227,7 +228,7 @@ import { EditorView } from "@codemirror/view";
 
 const route = useRoute();
 const router = useRouter();
-const { appId, baseId } = route.query;
+const { appId, baseId, modelName } = route.query;
 
 // console.log("route", route.params, appId, baseId, confId);
 
