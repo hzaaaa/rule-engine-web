@@ -25,7 +25,11 @@
           </el-row>
           <el-row v-if="currentNodeConf">
             <div class="label">节点类型：</div>
-            <div>{{ nodeTypeEnum[currentNodeConf.nodeType as keyof typeof nodeTypeEnum] ?? "" }}</div>
+            <div>{{ getChineseName("nodeTypeEnum", currentNodeConf.nodeType) }}</div>
+          </el-row>
+          <el-row v-if="currentNodeConf?.confName">
+            <div class="label">算子类型：</div>
+            <div>{{ getChineseName("confNameEnum", currentNodeConf.confName) }}</div>
           </el-row>
           <!-- <el-row v-if="currentNodeConf?.confField">
             <div class="label">配置JSON：</div>
@@ -129,7 +133,11 @@
               </el-row>
               <el-row>
                 <div class="label">节点类型：</div>
-                <div>{{ nodeTypeEnum[child.showConf.nodeType as keyof typeof nodeTypeEnum] ?? "" }}</div>
+                <div>{{ getChineseName("nodeTypeEnum", child.showConf.nodeType) }}</div>
+              </el-row>
+              <el-row v-if="child?.showConf?.confName">
+                <div class="label">算子类型：</div>
+                <div>{{ getChineseName("confNameEnum", child.showConf.confName) }}</div>
               </el-row>
               <el-row v-if="child?.showConf?.confField || child?.showConf?.confField === ''" class="jsonbox">
                 <div class="label">配置JSON：</div>
@@ -799,12 +807,25 @@ onMounted(() => {
 /**
  * 节点操作区
  */
+// 节点类型枚举
 const nodeTypeEnum = {
-  0: "根节点",
-  6: "表达式计算算子",
-  14: "操作算子",
-  15: "变量算子",
-  16: "参数绑定算子",
+  "0": "根节点",
+  "6": "表达式计算算子",
+  "14": "操作算子",
+  "15": "变量算子",
+  "16": "参数绑定算子",
+};
+// 算子类型枚举
+const confNameEnum = {
+  AddOperator: "求和算子",
+  BinaryLogicalChooseOperator: "二元逻辑选择符算子",
+  BinaryLogicalOperator: "二元逻辑计算符算子",
+  CalculateOperator: "计算表达式执行符算子",
+  IntervalLORCCaseOperator: "左开右闭区间算子",
+  MultiplicationOperator: "乘法算子",
+  SubtractionOperator: "减法算子",
+  SingleParam: "绑定单变量名",
+  SingleContextVariable: "单变量",
 };
 const nodeTypeList = [
   // { name: "Relation", id: 1 },
@@ -829,6 +850,16 @@ const relationTypeList = [
   // { name: "P_ANY", id: 12 },
   // { name: "P_NONE", id: 8 },
 ];
+// 获取节点类型以及算子类型的中文名
+const getChineseName = (target: "nodeTypeEnum" | "confNameEnum", key: string) => {
+  if (target === "nodeTypeEnum") {
+    return nodeTypeEnum[key as keyof typeof nodeTypeEnum] ?? "";
+  } else if (target === "confNameEnum") {
+    let k = key.split(".").pop() as keyof typeof confNameEnum;
+    return confNameEnum[k] ?? "";
+  }
+  return "";
+};
 
 const confClassList = ref<any[]>([]);
 const confFieldsList = ref<any[]>([]); // 添加节点时的动态输入框列表
