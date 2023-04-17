@@ -29,9 +29,9 @@
           <template #default="scope">
             <el-button link type="primary" @click="openEditDialog('edit', scope.row)">编辑</el-button>
             <el-button link type="primary" @click="jumpToConfDetail(scope.row)">查看详情</el-button>
-            <el-button link type="primary" @click="backup(scope.row)">备份</el-button>
+            <!-- <el-button link type="primary" @click="backup(scope.row)">备份</el-button>
             <el-button link type="primary" @click="peekBackup(scope.row)">备份历史</el-button>
-            <el-button link type="primary" @click="exportJson(scope.row)">导出</el-button>
+            <el-button link type="primary" @click="exportJson(scope.row)">导出</el-button> -->
           </template>
         </el-table-column>
       </el-table>
@@ -219,6 +219,7 @@ refreshTableData();
 const jumpToConfDetail = (row: any) => {
   router.push(`/conf/detail_v2?appId=${appId}&baseId=${row.id}&address=server&modelName=${row.name}`);
 };
+/*
 const backup = (row: any) => {
   const { id } = row;
   Object.assign(selectedBase.value, { baseId: id });
@@ -246,6 +247,7 @@ const exportJson = (row: any) => {
   exportVisible.value = true;
   showHistoryVisible.value = false;
 };
+*/
 
 /**
  * 创建/编辑 base 弹窗
