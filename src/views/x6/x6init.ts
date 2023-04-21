@@ -8,9 +8,13 @@ import { Clipboard } from '@antv/x6-plugin-clipboard'
 import { History } from '@antv/x6-plugin-history';
 import { MiniMap } from "@antv/x6-plugin-minimap";
 import { Graph, Node } from "@antv/x6";
+import { ElMessage } from "element-plus";
+import { Scroller } from '@antv/x6-plugin-scroller'
 
 export default (graph: any) => {
     // #region 使用插件
+    // graph.disposePlugins('minimap')
+    // debugger
     graph
         .use(
             new Transform({
@@ -19,9 +23,17 @@ export default (graph: any) => {
             }),
         )
         .use(
-            new Selection({
+            new Scroller({
                 enabled: true,
-                rubberband: true,
+                pageVisible: true,
+                pageBreak: false,
+                pannable: true,
+            }),
+        )
+        .use(
+            new Selection({
+                enabled: false,// map待看
+                rubberband: false,
                 showNodeSelectionBox: true,
                 // showEdgeSelectionBox: true,
             }),
@@ -53,6 +65,8 @@ export default (graph: any) => {
         );
     // #endregion
 
+    let onlyNodeTypeList = <Array<any>>["start", "end", 1, 3];//只能出现一次的node type
+    let canNotRemoveNodeTypeList = <Array<any>>["start", "end"];//无法删除的node type
     // #region 初始化 stencil
     const stencil = new Stencil({
         title: "组件库",
@@ -85,7 +99,7 @@ export default (graph: any) => {
             // columnWidth:
         },
         validateNode: (droppingNode: Node, options: Dnd.ValidateNodeOptions) => {
-            let onlyNodeTypeList = <Array<any>>[1, 3];//只能出现一次的node type
+
             let isOnly = onlyNodeTypeList.includes(droppingNode.data.type);
             if (isOnly) {
 
@@ -95,7 +109,7 @@ export default (graph: any) => {
                 })
                 if (hadNodeList.length !== 0) {
                     console.log('禁止拖进画板')
-
+                    ElMessage.info('当前组件已存在，请勿重复拖拽');
 
                     return false
                 } else {
@@ -111,21 +125,38 @@ export default (graph: any) => {
     document.getElementById("stencil")!.appendChild(stencil.container);
     // #endregion
 
+
+
     // #region 快捷键与事件
     // copy and paste
     graph.bindKey(["meta+c", "ctrl+c"], () => {
         let cells = graph.getSelectedCells();
         cells = cells.filter((element: any) => {
-            return element.data.type !== 'start'; //待修改 应为only list
+            let flag = onlyNodeTypeList.includes(element?.data?.type);
+            return !flag;
         });
         if (cells.length) {
             graph.copy(cells);
+        } else {
+            console.log('唯一节点无法拷贝');
+            ElMessage.info('唯一节点无法拷贝');
         }
     });
     graph.bindKey(["meta+x", "ctrl+x"], () => {
-        const cells = graph.getSelectedCells();
+        // const cells = graph.getSelectedCells();
+        // if (cells.length) {
+        //     graph.cut(cells);
+        // }
+        let cells = graph.getSelectedCells();
+        cells = cells.filter((element: any) => {
+            let flag = onlyNodeTypeList.includes(element?.data?.type);
+            return !flag;
+        });
         if (cells.length) {
             graph.cut(cells);
+        } else {
+            console.log('唯一节点无法剪切');
+            ElMessage.info('唯一节点无法剪切');
         }
     });
     graph.bindKey(["meta+v", "ctrl+v"], () => {
@@ -147,24 +178,27 @@ export default (graph: any) => {
     });
     graph.bindKey(["meta+shift+z", "ctrl+shift+z"], () => {
         // if (graph.history.canRedo()) {
-        graph.history.redo();
+        graph.redo();
         // }
     });
 
     //delete
-    graph.bindKey("backspace", () => {
-        const cells = graph.getSelectedCells();
-        if (cells.length) {
-            graph.removeCells(cells);
-        }
-    });
-    graph.bindKey("delete", () => {
+
+    graph.bindKey(["delete", 'backspace'], () => {
         let cells = graph.getSelectedCells();
         if (cells.length) {
             cells = cells.filter((element: any) => {
-                return element.data.type !== 'start';
+                let flag = canNotRemoveNodeTypeList.includes(element?.data?.type);
+                return !flag;
             });
-            graph.removeCells(cells);
+            // debugger
+
+            if (cells.length) {
+                graph.removeCells(cells);
+            } else {
+                console.log('节点不能被删除');
+                ElMessage.info('节点不能被删除');
+            }
         }
     });
     // #endregion
@@ -332,14 +366,14 @@ export default (graph: any) => {
                 ],
             },
             tools: [
-                {
-                    name: 'button-remove',
-                    args: {
-                        x: '100%',
-                        y: 0,
-                        offset: { x: -10, y: 10 },
-                    },
-                },
+                // {
+                //     name: 'button-remove',
+                //     args: {
+                //         x: '100%',
+                //         y: 0,
+                //         offset: { x: -10, y: 10 },
+                //     },
+                // },
 
             ],
 
@@ -458,8 +492,8 @@ export default (graph: any) => {
         label: "过程1",
         data: {
             type: 1,
-            name: "计算节点",
-            expression: "",
+            name: "计算节点1",
+            expression: "1",
         },
 
         attrs: {
@@ -477,8 +511,9 @@ export default (graph: any) => {
         label: "过程2",
         data: {
             type: 2,
-            name: "计算节点",
+            name: "计算节点2",
             expression: "",
+
         },
         ports: {
             items: [
@@ -492,33 +527,43 @@ export default (graph: any) => {
             ],
         },
     });
-    // const r4 = graph.createNode({
-    //   shape: "custom-polygon",
-    //   attrs: {
-    //     body: {
-    //       refPoints: "0,10 10,0 20,10 10,20",
-    //     },
-    //   },
-    //   label: "过程3",
-    //   data: {
-    //     type: 1,
-    //     name: "计算节点",
-    //   },
-    // });
-    // const r5 = graph.createNode({
-    //   shape: "custom-polygon",
-    //   attrs: {
-    //     body: {
-    //       refPoints: "10,0 40,0 30,20 0,20",
-    //     },
-    //   },
-    //   label: "其他节点",
-    // });
+    const r4 = graph.createNode({
+        shape: "custom-polygon",
+        attrs: {
+            body: {
+                refPoints: "0,10 10,0 20,10 10,20",
+            },
+        },
+        label: "过程3",
+        data: {
+            type: 3,
+            name: "计算节点3",
+            expression: '',
+        },
+    });
+    const r5 = graph.createNode({
+        shape: "custom-polygon",
+        attrs: {
+            body: {
+                refPoints: "10,0 40,0 30,20 0,20",
+            },
+        },
+        label: "其他节点",
+        data: {
+            type: 'other',
+            name: "其他节点",
+            expression: '',
+        },
+    });
 
-    stencil.load([r2, r3], "group1");//r4, r5,
+    stencil.load([r2, r3, r4, r5,], "group1");//
     // #endregion
     // #endregion
 
+    return {
+        onlyNodeTypeList,
+        canNotRemoveNodeTypeList
+    }
 
 }
 export let test = () => {

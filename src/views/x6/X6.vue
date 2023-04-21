@@ -8,14 +8,17 @@
         <div id="container"></div>
         <div id="minimap" class="minimap"></div>
         <div id="" class="top-tools ">
-          <el-icon>
+          <el-icon @click="resetGraph">
             <FullScreen />
           </el-icon>
-          <el-icon>
+          <el-icon @click="ZoomInClick">
             <ZoomIn />
           </el-icon>
-          <el-icon>
+          <el-icon @click="ZoomOutClick">
             <ZoomOut />
+          </el-icon>
+          <el-icon @click="clearClick">
+            <Delete />
           </el-icon>
 
 
@@ -65,16 +68,17 @@
 <script setup lang="ts">
 
 import { Graph, Shape } from "@antv/x6";
-import { onMounted, ref, watch } from "vue";
+import { nextTick, onMounted, ref, watch } from "vue";
 import mockTreeDataResult from "./mock.json";
 import Hierarchy from "@antv/hierarchy";
 
-
+import { ElMessage } from "element-plus";
 import x6init, { test } from './x6init';
 
 
 
 
+let currentPageCanNotRemoveNodeTypeList = <any>[];
 
 let graph: any = null;
 let container: any = null;
@@ -91,15 +95,17 @@ const initGraph = (data: any) => {
     container,
     width,
     height,
-
+    background: {
+      color: '#F2F7FA',
+    },
     // 是否开启网格
-    grid: true,
-    panning: false,
+    grid: false,//开启时：  滚动时网格不渲染
+    panning: true,
     // 鼠标滚轮行为
     mousewheel: {
       enabled: true,
-      minScale: 0.5,
-      maxScale: 2,
+      // minScale: 0.4,
+      // maxScale: 2,
     },
 
     // 连线风格
@@ -156,8 +162,11 @@ const initGraph = (data: any) => {
 
 
 
-  x6init(graph);
 
+  let {
+    canNotRemoveNodeTypeList
+  } = x6init(graph);
+  currentPageCanNotRemoveNodeTypeList = canNotRemoveNodeTypeList;
 
   // 开始{id: 1, }，多个计算节点，
   let tempData = [
@@ -200,15 +209,39 @@ const contextMenuoOutsideClick = () => {
 }
 const deleteNode = () => {
   if (currentRightClickSelectedNode) {
-    if (currentRightClickSelectedNode.data.type === 'start') {
-      console.log('开始节点不能被删除')
+    let flag = currentPageCanNotRemoveNodeTypeList.includes(currentRightClickSelectedNode.data.type)
+    if (flag) {
+      console.log('节点不能被删除');
+      ElMessage.info('节点不能被删除');
     } else {
       graph.removeCell(currentRightClickSelectedNode);
       contextMenuoOutsideClick();
     }
   }
 }
+const resetGraph = () => {
+  graph.zoomToFit({ maxScale: 1 });
+  graph.centerContent();
+}
+const ZoomInClick = () => {
+  graph.zoom(0.2);
+}
+const ZoomOutClick = () => {
+  graph.zoom(-0.2);
+}
+const clearClick = () => {
+  // graph.disposePlugins('minimap')
+  // refreshGraph();
+  let cells = graph.getCells();
+  cells = cells.filter((item: any) => {
+    let flag = currentPageCanNotRemoveNodeTypeList.includes(item.data.type);
+    return !flag
+  })
+  graph.removeCells(cells);
+  resetGraph();
+}
 // #endregion
+let currentSelectedNode = <any>null;
 const bindEvents = () => {
   graph.on("node:contextmenu", (obj: any) => {
     contentMenuVisible.value = true;
@@ -217,19 +250,26 @@ const bindEvents = () => {
     currentRightClickSelectedNode = obj.node;
 
   });
+
   graph.on("node:click", ({ node }: any) => {
 
     console.log("node", node.data);
     //
+    currentSelectedNode = node;
     if (node.data) {
       console.log(node.data);
 
       // type.value = node.data.showConf.nodeType;
       // name.value = node.data.showConf.labelName;
+      name.value = node.data.name;
       // expression.value = node.data.showConf.confField;
+      expression.value = node.data.expression;
+    } else {
+      currentSelectedNode = null;
     }
   });
   graph.on("blank:click", () => {
+
     type.value = "";
     name.value = "";
     expression.value = "";
@@ -246,7 +286,11 @@ const bindEvents = () => {
 };
 
 const refreshGraph = () => {
+
   initGraph(data);
+  nextTick(() => {
+    resetGraph();
+  })
 };
 
 onMounted(() => {
@@ -314,11 +358,14 @@ const name = ref("");
 const expression = ref("");
 const saveInfo = () => {
   // console.log("saveInfo", (graph.getSelectedCells()[0].data = { expression }));
-  graph.getSelectedCells()[0].data = {
-    type: type.value,
-    name: name.value,
-    expression: expression.value,
-  };
+  // graph.getSelectedCells()[0].data = {
+  //   type: type.value,
+  //   name: name.value,
+  //   expression: expression.value,
+  // };
+  currentSelectedNode.data.name = name.value;
+  currentSelectedNode.data.expression = expression.value;
+
 };
 // #region 树形结构
 /**
