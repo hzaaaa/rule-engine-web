@@ -217,7 +217,7 @@ const refreshTableData = () => {
 };
 refreshTableData();
 const jumpToConfDetail = (row: any) => {
-  router.push(`/conf/detail?appId=${appId}&baseId=${row.id}&address=server`);
+  router.push(`/conf/detail_v1?appId=${appId}&baseId=${row.id}&address=server`);
 };
 const backup = (row: any) => {
   const { id } = row;
