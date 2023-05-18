@@ -1,14 +1,14 @@
 <template>
   <div class="tool-bar-ri">
-    <span class="username">{{ globalStore.username }}({{ globalStore.role }})</span>
+    <!-- <span class="username">{{ globalStore.username }}({{ globalStore.role }})</span> -->
     <Avatar />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useGlobalStore } from "@/store";
+// import { useGlobalStore } from "@/store";
 import Avatar from "./components/Avatar.vue";
-const globalStore = useGlobalStore();
+// const globalStore = useGlobalStore();
 </script>
 
 <style scoped lang="scss">
