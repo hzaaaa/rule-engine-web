@@ -103,6 +103,20 @@ export const postBaseEditApi = (params?: any) => {
 */
 
 /**
+ * @name 删除base
+ * @param appId: 非必须
+ * @param id: 必须，编辑必须，number
+ * @param name: 非必须，base名称
+ * @param scenes: 非必须，订阅场景
+ * @param status: 非必须，0删除，不删除不必须，number
+ * @param confId: 非必须，配置ID修改，number
+ * @param debug: 非必须，debug 类型修改, number
+ */
+export const postBaseDeleteApi = (params: any) => {
+  return http.post<any>(PORTApp_v2 + `/base/delete`, params);
+};
+
+/**
  * @name base备份
  * @param baseId: 必须，备份baseId
  * @param reason: 非必须，备份原因

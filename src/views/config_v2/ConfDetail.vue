@@ -436,6 +436,12 @@ const initTree = (treeData: any[]) => {
           shadowColor: "pink",
           shadowBlur: 8,
         },
+        active: {
+          stroke: "pink",
+          lineWidth: 2,
+          shadowColor: "pink",
+          shadowBlur: 8,
+        },
       },
       layout: {
         type: "mindmap",
@@ -488,10 +494,9 @@ const initTree = (treeData: any[]) => {
       });
       const rootModel = rootNode.getModel();
       // 初始加载时，默认选中根节点
-      graph.setItemState(rootNode, "selected", true);
+      graph.setItemState(rootNode, "active", true);
       currentNodeModel.value = rootModel;
       currentNodeConf.value = rootModel.showConf;
-      // childNodes.value = [...rootModel.leafNodes, ...rootModel.children];
       childNodes.value = rootModel.children;
     }
     graph.fitView(100);
@@ -670,27 +675,29 @@ const getStyle = (type: number) => {
 };
 
 const bindEvents = () => {
-  // 点击 canvas 空白处，关闭节点操作区
-  graph.on("click", (ev: any) => {
-    if (!ev.item || ev.item._cfg.type !== "node") {
-      clearCurNodeState();
-      cancleAddNodeModel();
-      // graph.getNodes().forEach((node: any) => {
-      //   graph.clearItemStates(node);
-      // });
-    }
-  });
+  // 点击 canvas 空白处，不做任何操作
+  // graph.on("click", (ev: any) => {
+  //   if (!ev.item || ev.item._cfg.type !== "node") {
+  //     setBlankAreaActive();
+  //     isOperationButtonsVisible.value = true;
+  //     // clearCurNodeState();
+  //     // cancleAddNodeModel();
+  //     // graph.getNodes().forEach((node: any) => {
+  //     //   graph.clearItemStates(node);
+  //     // });
+  //   }
+  // });
   // 左键单击节点时
   graph.on("node:click", (evt: any) => {
     const { item } = evt;
-    const model = item.getModel();
-    console.log("model", model);
-    if (model?.showConf?.nodeId === currentNodeConf?.value?.nodeId) {
-      // 如果点击节点和当前高亮节点是同一节点，取消选中、清除当前节点信息
-      cancleAddNodeModel();
-      clearCurNodeState();
-    } else {
-      // 如果点击节点不为当前高亮节点，选中点击节点
+    const model = item.getModel(); // 元素实例的数据模型
+    graph.getNodes().forEach((node: any) => {
+      graph.clearItemStates(node);
+    });
+    item.setState("active", true);
+    console.log("model", model, item.getStates());
+    if (model?.showConf?.nodeId !== currentNodeConf?.value?.nodeId) {
+      // 如果点击节点不为当前缓存节点，清空左侧信息区并将当前缓存节点替换为点击节点
       cancleAddNodeModel();
       currentNodeModel.value = model;
       currentNodeConf.value = model.showConf;
@@ -818,6 +825,7 @@ onMounted(() => {
 // 节点类型枚举
 const nodeTypeEnum = {
   "0": "根节点",
+  "1": "关系节点",
   "6": "表达式计算算子",
   "14": "操作算子",
   "15": "变量算子",
@@ -836,10 +844,10 @@ const confNameEnum = {
   SingleContextVariable: "单变量",
 };
 const nodeTypeList = [
-  // { name: "Relation", id: 1 },
+  { name: "关系节点", id: 1 },
   // { name: "Flow", id: 5 },
-  // { name: "Result", id: 6 },
-  // { name: "None", id: 7 },
+  { name: "表达式计算算子", id: 6 },
+  { name: "None", id: 7 },
   { name: "节点ID", id: 13 },
   { name: "操作算子", id: 14 },
   { name: "变量算子", id: 15 },
@@ -851,11 +859,11 @@ const filterNodeTypeList = computed(() => {
 });
 
 const relationTypeList = [
-  { name: "AND", id: 1 },
-  { name: "TRUE", id: 2 },
+  // { name: "AND", id: 1 },
+  // { name: "TRUE", id: 2 },
   { name: "ALL", id: 3 },
   { name: "ANY", id: 4 },
-  { name: "NONE", id: 0 },
+  // { name: "NONE", id: 0 },
   // { name: "P_AND", id: 9 },
   // { name: "P_TRUE", id: 10 },
   // { name: "P_ALL", id: 11 },
@@ -892,8 +900,8 @@ const childNodes = ref<any[]>([]); // 展示在右侧子节点区
 const isOperationButtonsVisible = ref(true);
 const addNodeModelType = ref("child");
 const operationTitle = ref("添加子节点");
-const addNodeModelFormOrigin = { name: "", nodeType: 14, relationType: 1, confName: "", multiplexIds: "", confField: "" };
-const addNodeModelForm = reactive({ name: "", nodeType: 14, relationType: 1, confName: "", multiplexIds: "", confField: "" });
+const addNodeModelFormOrigin = { name: "", nodeType: 14, relationType: 4, confName: "", multiplexIds: "", confField: "" };
+const addNodeModelForm = reactive({ name: "", nodeType: 14, relationType: 4, confName: "", multiplexIds: "", confField: "" });
 
 const showAddNodeModel = (type: "child" | "front" | "exchange" = "child") => {
   addNodeModelType.value = type;
