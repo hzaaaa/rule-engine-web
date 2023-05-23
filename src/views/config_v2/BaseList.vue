@@ -222,10 +222,18 @@ const jumpToConfDetail = (row: any) => {
   router.push(`/conf/detail_v2?appId=${appId}&baseId=${row.id}&address=server&modelName=${row.name}`);
 };
 const deleteBase = (row: any) => {
-  postBaseDeleteApi({ id: row.id }).then(() => {
-    ElMessage.success("删除成功");
-    refreshTableData();
-  });
+  ElMessageBox.confirm(`确认删除 <Base ${row.id}> 吗？`, "", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+  })
+    .then(async () => {
+      await postBaseDeleteApi({
+        id: row.id,
+      });
+      ElMessage.success("删除成功");
+      refreshTableData();
+    })
+    .catch(() => {});
 };
 /*
 const backup = (row: any) => {

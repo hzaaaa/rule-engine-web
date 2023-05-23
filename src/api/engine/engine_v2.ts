@@ -47,6 +47,28 @@ export const postAppAddApi = (params?: any) => {
 };
 
 /**
+ * @name 编辑app
+ * @param id: 非必须，新建不传，编辑必传
+ * @param status: 非必须，默认为true，删除时只需填 id 和 status=false
+ * @param name: 必须，app名称
+ * @param info: 非必须，app描述
+ */
+export const postAppUpdateApi = (params?: any) => {
+  return http.post<any>(PORTApp_v2 + `/app/update`, params);
+};
+
+/**
+ * @name 删除app
+ * @param id: 非必须，新建不传，编辑必传
+ * @param status: 非必须，默认为true，删除时只需填 id 和 status=false
+ * @param name: 必须，app名称
+ * @param info: 非必须，app描述
+ */
+export const postAppDeleteApi = (params?: any) => {
+  return http.post<any>(PORTApp_v2 + `/app/delete`, params);
+};
+
+/**
  * @name 获取base列表
  * @param app: 必须
  * @param id: 非必须

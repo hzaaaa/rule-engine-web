@@ -844,14 +844,14 @@ const confNameEnum = {
   SingleContextVariable: "单变量",
 };
 const nodeTypeList = [
-  { name: "关系节点", id: 1 },
-  // { name: "Flow", id: 5 },
-  { name: "表达式计算算子", id: 6 },
-  { name: "None", id: 7 },
-  { name: "节点ID", id: 13 },
   { name: "操作算子", id: 14 },
   { name: "变量算子", id: 15 },
   { name: "参数绑定算子", id: 16 },
+  { name: "None", id: 7 },
+  { name: "节点ID", id: 13 },
+  { name: "关系节点", id: 1 },
+  // { name: "Flow", id: 5 },
+  { name: "表达式计算算子", id: 6 },
 ];
 // 节点 ID 类型只在新增时出现，编辑时不出现
 const filterNodeTypeList = computed(() => {
