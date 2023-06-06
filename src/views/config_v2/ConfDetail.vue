@@ -37,82 +37,84 @@
           </el-row> -->
         </div>
         <div class="operation">
-          <div v-if="isOperationButtonsVisible" class="operation-btns">
-            <el-button @click="showAddNodeModel('child')" :disabled="!currentNodeModel" round>添加子节点</el-button>
-            <el-button
-              @click="showAddNodeModel('exchange')"
-              :disabled="!currentNodeModel || currentNodeConf.nodeType === 0"
-              round
-            >
-              编辑节点
-            </el-button>
-            <el-button @click="upNode" :disabled="!currentNodeModel" round>上移节点</el-button>
-            <el-button @click="downNode" :disabled="!currentNodeModel" round>下移节点</el-button>
-            <!-- <el-button @click="showAddNodeModel('child')" v-if="!isCurrentLeafNode" :disabled="!currentNodeModel" round
-              >添加子节点</el-button
-            > -->
-            <!-- <el-button @click="showAddNodeModel('front')" v-if="!currentNodeModel?.forward" :disabled="!currentNodeModel" round
-              >添加前置节点</el-button
-            >
-            <el-button @click="showAddNodeModel('exchange')" :disabled="!currentNodeModel" round>节点转换</el-button> -->
-            <el-button @click="deleteCurrentNode" :disabled="!currentNodeModel" round plain type="danger">删除本节点</el-button>
-          </div>
-          <div v-else>
-            <h4>{{ operationTitle }}</h4>
-            <el-scrollbar style="height: calc(100% - 48px)">
-              <el-row v-if="addNodeModelForm.nodeType !== 13">
-                <div class="label">名称：</div>
-                <el-input v-model="addNodeModelForm.name"></el-input>
-              </el-row>
-              <el-row>
-                <div class="label">节点类型：</div>
-                <el-select v-model="addNodeModelForm.nodeType" @change="onNodeTypeChangeNew" style="width: 100%">
-                  <el-option
-                    v-for="nodeType in filterNodeTypeList"
-                    :key="nodeType.id"
-                    :label="nodeType.name"
-                    :value="nodeType.id"
-                  ></el-option>
-                </el-select>
-              </el-row>
-              <el-row v-if="addNodeModelForm.nodeType === 1">
-                <div class="label">relationType：</div>
-                <el-select v-model="addNodeModelForm.relationType" style="width: 100%">
-                  <el-option
-                    v-for="relationType in relationTypeList"
-                    :key="relationType.id"
-                    :label="relationType.name"
-                    :value="relationType.id"
-                  ></el-option>
-                </el-select>
-              </el-row>
-              <el-row v-if="addNodeModelForm.nodeType !== 1 && addNodeModelForm.nodeType !== 13">
-                <div class="label">算子类型：</div>
-                <el-select v-model="addNodeModelForm.confName" @change="onConfNameChange" style="width: 100%">
-                  <el-option
-                    v-for="confClass in confClassList"
-                    :key="confClass.name"
-                    :label="confClass.desc"
-                    :value="confClass.clazz"
-                  ></el-option>
-                </el-select>
-              </el-row>
-              <el-row v-if="addNodeModelForm.nodeType === 13">
-                <div class="label">节点ID(逗号分隔)：</div>
-                <el-input v-model="addNodeModelForm.multiplexIds"></el-input>
-              </el-row>
-              <el-row v-for="field in confFieldsList" :key="field.field">
-                <div class="label">{{ `${field.desc}：` }}</div>
-                <el-radio-group v-model="dynamicForm[field.field]" v-if="field.type === 'boolean'">
-                  <el-radio :label="true">是</el-radio>
-                  <el-radio :label="false">否</el-radio>
-                </el-radio-group>
-                <el-input v-model="dynamicForm[field.field]" v-else :placeholder="`请输入 ${field.type} 格式`"></el-input>
-              </el-row>
-              <el-button @click="cancleAddNodeModel" size="small">取消</el-button>
-              <el-button @click="submitAddNodeModel" type="primary" size="small">确定</el-button>
-            </el-scrollbar>
-          </div>
+          <el-scrollbar>
+            <div v-if="isOperationButtonsVisible" class="operation-btns">
+              <el-button @click="showAddNodeModel('child')" :disabled="!currentNodeModel" round>添加子节点</el-button>
+              <el-button
+                @click="showAddNodeModel('exchange')"
+                :disabled="!currentNodeModel || currentNodeConf.nodeType === 0"
+                round
+              >
+                编辑节点
+              </el-button>
+              <el-button @click="upNode" :disabled="!currentNodeModel" round>上移节点</el-button>
+              <el-button @click="downNode" :disabled="!currentNodeModel" round>下移节点</el-button>
+              <!-- <el-button @click="showAddNodeModel('child')" v-if="!isCurrentLeafNode" :disabled="!currentNodeModel" round
+                >添加子节点</el-button
+              > -->
+              <!-- <el-button @click="showAddNodeModel('front')" v-if="!currentNodeModel?.forward" :disabled="!currentNodeModel" round
+                >添加前置节点</el-button
+              >
+              <el-button @click="showAddNodeModel('exchange')" :disabled="!currentNodeModel" round>节点转换</el-button> -->
+              <el-button @click="deleteCurrentNode" :disabled="!currentNodeModel" round plain type="danger">删除本节点</el-button>
+            </div>
+            <div v-else>
+              <h4>{{ operationTitle }}</h4>
+              <el-scrollbar style="height: calc(100% - 48px)">
+                <el-row v-if="addNodeModelForm.nodeType !== 13">
+                  <div class="label">名称：</div>
+                  <el-input v-model="addNodeModelForm.name"></el-input>
+                </el-row>
+                <el-row>
+                  <div class="label">节点类型：</div>
+                  <el-select v-model="addNodeModelForm.nodeType" @change="onNodeTypeChangeNew" style="width: 100%">
+                    <el-option
+                      v-for="nodeType in filterNodeTypeList"
+                      :key="nodeType.id"
+                      :label="nodeType.name"
+                      :value="nodeType.id"
+                    ></el-option>
+                  </el-select>
+                </el-row>
+                <el-row v-if="addNodeModelForm.nodeType === 1">
+                  <div class="label">relationType：</div>
+                  <el-select v-model="addNodeModelForm.relationType" style="width: 100%">
+                    <el-option
+                      v-for="relationType in relationTypeList"
+                      :key="relationType.id"
+                      :label="relationType.name"
+                      :value="relationType.id"
+                    ></el-option>
+                  </el-select>
+                </el-row>
+                <el-row v-if="addNodeModelForm.nodeType !== 1 && addNodeModelForm.nodeType !== 13">
+                  <div class="label">算子类型：</div>
+                  <el-select v-model="addNodeModelForm.confName" @change="onConfNameChange" style="width: 100%">
+                    <el-option
+                      v-for="confClass in confClassList"
+                      :key="confClass.name"
+                      :label="confClass.desc"
+                      :value="confClass.clazz"
+                    ></el-option>
+                  </el-select>
+                </el-row>
+                <el-row v-if="addNodeModelForm.nodeType === 13">
+                  <div class="label">节点ID(逗号分隔)：</div>
+                  <el-input v-model="addNodeModelForm.multiplexIds"></el-input>
+                </el-row>
+                <el-row v-for="field in confFieldsList" :key="field.field">
+                  <div class="label">{{ `${field.desc}：` }}</div>
+                  <el-radio-group v-model="dynamicForm[field.field]" v-if="field.type === 'boolean'">
+                    <el-radio :label="true">是</el-radio>
+                    <el-radio :label="false">否</el-radio>
+                  </el-radio-group>
+                  <el-input v-model="dynamicForm[field.field]" v-else :placeholder="`请输入 ${field.type} 格式`"></el-input>
+                </el-row>
+                <el-button @click="cancleAddNodeModel" size="small" style="margin-bottom: 4px">取消</el-button>
+                <el-button @click="submitAddNodeModel" type="primary" size="small" style="margin-bottom: 4px">确定</el-button>
+              </el-scrollbar>
+            </div>
+          </el-scrollbar>
         </div>
       </div>
       <!-- 左侧分隔栏，支持左右拖动 -->
@@ -1052,12 +1054,9 @@ const deleteCurrentNode = () => {
     });
 };
 const onNodeTypeChangeNew = (type: number) => {
-  if (type !== addNodeModelForm.nodeType) {
-    addNodeModelForm.confName = "";
-    confClassList.value.length = 0;
-    dynamicForm.value = {};
-  }
-  addNodeModelForm.nodeType = type;
+  addNodeModelForm.confName = "";
+  confClassList.value.length = 0;
+  dynamicForm.value = {};
   if (type !== 1 && type !== 13) {
     getConfLeafInfoApi({ appId, type: addNodeModelForm.nodeType }).then((res) => {
       confClassList.value = res.data;
@@ -1232,6 +1231,7 @@ const handleLeftMouseUp = () => {
 }
 .box {
   display: flex;
+  overflow: hidden;
   position: relative;
   margin-top: 8px;
   width: 100%;
@@ -1244,6 +1244,7 @@ const handleLeftMouseUp = () => {
     padding: 4px;
     // border-right: 1px solid #eeeeee;
     width: 20%;
+    height: 100%;
     h4 {
       margin: 0;
       height: 40px;
@@ -1261,12 +1262,13 @@ const handleLeftMouseUp = () => {
       flex-shrink: 0;
       padding-bottom: 4px;
       border-bottom: 1px solid #eeeeee;
-      min-height: 200px;
+      min-height: 160px;
     }
     .operation {
-      overflow: hidden;
+      overflow: auto;
       flex: 1;
-      padding-top: 8px;
+      box-sizing: border-box;
+      padding: 8px 0;
       &-btns {
         display: flex;
         flex-direction: column;
