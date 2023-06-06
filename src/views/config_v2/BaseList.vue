@@ -29,6 +29,7 @@
           <template #default="scope">
             <el-button link type="primary" @click="openEditDialog('edit', scope.row)">编辑</el-button>
             <el-button link type="primary" @click="jumpToConfDetail(scope.row)">查看详情</el-button>
+            <el-button link type="danger" @click="deleteBase(scope.row)">删除</el-button>
             <!-- <el-button link type="primary" @click="backup(scope.row)">备份</el-button>
             <el-button link type="primary" @click="peekBackup(scope.row)">备份历史</el-button>
             <el-button link type="primary" @click="exportJson(scope.row)">导出</el-button> -->
@@ -140,6 +141,7 @@ import {
   getBaseRollbackApi,
   getBaseExportApi,
   postBaseImportApi,
+  postBaseDeleteApi,
 } from "@/api/engine/engine_v2";
 import { reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
@@ -218,6 +220,20 @@ const refreshTableData = () => {
 refreshTableData();
 const jumpToConfDetail = (row: any) => {
   router.push(`/conf/detail_v2?appId=${appId}&baseId=${row.id}&address=server&modelName=${row.name}`);
+};
+const deleteBase = (row: any) => {
+  ElMessageBox.confirm(`确认删除 <Base ${row.id}> 吗？`, "", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+  })
+    .then(async () => {
+      await postBaseDeleteApi({
+        id: row.id,
+      });
+      ElMessage.success("删除成功");
+      refreshTableData();
+    })
+    .catch(() => {});
 };
 /*
 const backup = (row: any) => {

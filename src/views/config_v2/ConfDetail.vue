@@ -39,6 +39,15 @@
         <div class="operation">
           <div v-if="isOperationButtonsVisible" class="operation-btns">
             <el-button @click="showAddNodeModel('child')" :disabled="!currentNodeModel" round>添加子节点</el-button>
+            <el-button
+              @click="showAddNodeModel('exchange')"
+              :disabled="!currentNodeModel || currentNodeConf.nodeType === 0"
+              round
+            >
+              编辑节点
+            </el-button>
+            <el-button @click="upNode" :disabled="!currentNodeModel" round>上移节点</el-button>
+            <el-button @click="downNode" :disabled="!currentNodeModel" round>下移节点</el-button>
             <!-- <el-button @click="showAddNodeModel('child')" v-if="!isCurrentLeafNode" :disabled="!currentNodeModel" round
               >添加子节点</el-button
             > -->
@@ -51,7 +60,7 @@
           <div v-else>
             <h4>{{ operationTitle }}</h4>
             <el-scrollbar style="height: calc(100% - 48px)">
-              <el-row>
+              <el-row v-if="addNodeModelForm.nodeType !== 13">
                 <div class="label">名称：</div>
                 <el-input v-model="addNodeModelForm.name"></el-input>
               </el-row>
@@ -59,14 +68,14 @@
                 <div class="label">节点类型：</div>
                 <el-select v-model="addNodeModelForm.nodeType" @change="onNodeTypeChangeNew" style="width: 100%">
                   <el-option
-                    v-for="nodeType in nodeTypeList"
+                    v-for="nodeType in filterNodeTypeList"
                     :key="nodeType.id"
                     :label="nodeType.name"
                     :value="nodeType.id"
                   ></el-option>
                 </el-select>
               </el-row>
-              <el-row v-if="selectedNodeType === 1">
+              <el-row v-if="addNodeModelForm.nodeType === 1">
                 <div class="label">relationType：</div>
                 <el-select v-model="addNodeModelForm.relationType" style="width: 100%">
                   <el-option
@@ -77,7 +86,7 @@
                   ></el-option>
                 </el-select>
               </el-row>
-              <el-row v-if="selectedNodeType !== 1 && selectedNodeType !== 13">
+              <el-row v-if="addNodeModelForm.nodeType !== 1 && addNodeModelForm.nodeType !== 13">
                 <div class="label">算子类型：</div>
                 <el-select v-model="addNodeModelForm.confName" @change="onConfNameChange" style="width: 100%">
                   <el-option
@@ -88,7 +97,7 @@
                   ></el-option>
                 </el-select>
               </el-row>
-              <el-row v-if="selectedNodeType === 13">
+              <el-row v-if="addNodeModelForm.nodeType === 13">
                 <div class="label">节点ID(逗号分隔)：</div>
                 <el-input v-model="addNodeModelForm.multiplexIds"></el-input>
               </el-row>
@@ -113,12 +122,14 @@
       <div class="resizer" @mousedown="handleMouseDown"></div>
       <!-- 叶子节点区 -->
       <div class="right" ref="rightPanel" :style="'width: ' + rigntPanelWidthPercent + '%'">
-        <el-scrollbar>
-          <div v-for="child in childNodes" :key="child.id">
+        <el-scrollbar v-if="currentNodeModel">
+          <!-- <div v-for="child in childNodes" :key="child.id"> -->
+          <!-- 改为显示当前节点信息 -->
+          <div v-for="child in [currentNodeModel]" :key="child?.id">
             <el-card class="card" shadow="hover">
               <template #header>
                 <div class="card-header">
-                  <span>{{ child.showConf.nodeName }}</span>
+                  <span>{{ child?.showConf?.nodeName }}</span>
                   <div>
                     <el-button type="primary" size="small" v-if="child?.showConf?.confField" @click="submitEditChildNode(child)"
                       >保存</el-button
@@ -129,15 +140,15 @@
               </template>
               <el-row>
                 <div class="label">节点ID：</div>
-                <div>{{ child.showConf.nodeId }}</div>
+                <div>{{ child?.showConf?.nodeId }}</div>
               </el-row>
               <el-row>
                 <div class="label">节点类型：</div>
-                <div>{{ getChineseName("nodeTypeEnum", child.showConf.nodeType) }}</div>
+                <div>{{ getChineseName("nodeTypeEnum", child?.showConf?.nodeType) }}</div>
               </el-row>
               <el-row v-if="child?.showConf?.confName">
                 <div class="label">算子类型：</div>
-                <div>{{ getChineseName("confNameEnum", child.showConf.confName) }}</div>
+                <div>{{ getChineseName("confNameEnum", child?.showConf?.confName) }}</div>
               </el-row>
               <el-row v-if="child?.showConf?.confField || child?.showConf?.confField === ''" class="jsonbox">
                 <div class="label">配置JSON：</div>
@@ -211,7 +222,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 // import { Graph } from "@antv/x6";
 import G6 from "@antv/g6";
@@ -314,8 +325,7 @@ const onExportClosed = () => {
 /**
  * 画布区
  */
-const showOperation = ref(false);
-const selectedNodeType = ref(14);
+// const selectedNodeType = ref(14);
 
 let graph: any = null;
 let container: any = null;
@@ -375,7 +385,7 @@ const initTree = (treeData: any[]) => {
       width,
       height,
       autoPaint: true,
-      minZoom: 0.3,
+      minZoom: 0.2,
       maxZoom: 2,
       modes: {
         default: [
@@ -421,6 +431,12 @@ const initTree = (treeData: any[]) => {
       },
       nodeStateStyles: {
         selected: {
+          stroke: "pink",
+          lineWidth: 2,
+          shadowColor: "pink",
+          shadowBlur: 8,
+        },
+        active: {
           stroke: "pink",
           lineWidth: 2,
           shadowColor: "pink",
@@ -478,10 +494,9 @@ const initTree = (treeData: any[]) => {
       });
       const rootModel = rootNode.getModel();
       // 初始加载时，默认选中根节点
-      graph.setItemState(rootNode, "selected", true);
+      graph.setItemState(rootNode, "active", true);
       currentNodeModel.value = rootModel;
       currentNodeConf.value = rootModel.showConf;
-      // childNodes.value = [...rootModel.leafNodes, ...rootModel.children];
       childNodes.value = rootModel.children;
     }
     graph.fitView(100);
@@ -545,86 +560,86 @@ const getStyle = (type: number) => {
       stroke: "#EEAD0E",
       size: [16, 16],
     };
-  } else if (type === 5) {
-    // FLOW 节点，叶子节点，已不再显示
-    return {
-      type: "diamond",
-      // color: "#C1FFC1",
-      // stroke: "#00CD00",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [31, 31],
-    };
-  } else if (type === 6) {
-    // Result 节点，叶子节点，已不再显示
-    return {
-      type: "rect",
-      // color: "#C1FFC1",
-      // stroke: "#00CD00",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [26, 26],
-    };
-  } else if (type === 7) {
-    // None 节点，叶子节点已不再显示
-    return {
-      type: "triangle",
-      // color: "#C1FFC1",
-      // stroke: "#00CD00",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [16, 16],
-    };
-  } else if (type === 8) {
-    // P_None 节点
-    return {
-      type: "circle",
-      // color: "#C9D8DF",
-      // stroke: "#98bccd",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [30, 30],
-    };
-  } else if (type === 9) {
-    // P_AND
-    return {
-      type: "circle",
-      // color: "#B2DEE1",
-      // stroke: "#6dacb0",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [30, 30],
-    };
-  } else if (type === 10) {
-    // P_TRUE
-    return {
-      type: "circle",
-      // color: "#F7E6D6",
-      // stroke: "#d7bea7",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [30, 30],
-    };
-  } else if (type === 11) {
-    // P_ALL
-    return {
-      type: "circle",
-      // color: "#4CB19C",
-      // stroke: "#13878b",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [30, 30],
-    };
-  } else if (type === 12) {
-    // P_ANY
-    return {
-      type: "circle",
-      // color: "#D25B85",
-      // stroke: "#d02561",
-      color: "#FFFACD",
-      stroke: "#EEAD0E",
-      size: [30, 30],
-    };
+    // } else if (type === 5) {
+    //   // FLOW 节点，叶子节点，已不再显示
+    //   return {
+    //     type: "diamond",
+    //     // color: "#C1FFC1",
+    //     // stroke: "#00CD00",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [31, 31],
+    //   };
+    // } else if (type === 6) {
+    //   // Result 节点，叶子节点，已不再显示
+    //   return {
+    //     type: "rect",
+    //     // color: "#C1FFC1",
+    //     // stroke: "#00CD00",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [26, 26],
+    //   };
+    // } else if (type === 7) {
+    //   // None 节点，叶子节点已不再显示
+    //   return {
+    //     type: "triangle",
+    //     // color: "#C1FFC1",
+    //     // stroke: "#00CD00",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [16, 16],
+    //   };
+    // } else if (type === 8) {
+    //   // P_None 节点
+    //   return {
+    //     type: "circle",
+    //     // color: "#C9D8DF",
+    //     // stroke: "#98bccd",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [30, 30],
+    //   };
+    // } else if (type === 9) {
+    //   // P_AND
+    //   return {
+    //     type: "circle",
+    //     // color: "#B2DEE1",
+    //     // stroke: "#6dacb0",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [30, 30],
+    //   };
+    // } else if (type === 10) {
+    //   // P_TRUE
+    //   return {
+    //     type: "circle",
+    //     // color: "#F7E6D6",
+    //     // stroke: "#d7bea7",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [30, 30],
+    //   };
+    // } else if (type === 11) {
+    //   // P_ALL
+    //   return {
+    //     type: "circle",
+    //     // color: "#4CB19C",
+    //     // stroke: "#13878b",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [30, 30],
+    //   };
+    // } else if (type === 12) {
+    //   // P_ANY
+    //   return {
+    //     type: "circle",
+    //     // color: "#D25B85",
+    //     // stroke: "#d02561",
+    //     color: "#FFFACD",
+    //     stroke: "#EEAD0E",
+    //     size: [30, 30],
+    //   };
   } else if (type === 14) {
     // 操作算子
     return {
@@ -660,40 +675,40 @@ const getStyle = (type: number) => {
 };
 
 const bindEvents = () => {
-  // 点击 canvas 空白处，关闭节点操作区
-  graph.on("click", (ev: any) => {
-    if (!ev.item || ev.item._cfg.type !== "node") showOperation.value = false;
-    if (!ev.item || ev.item._cfg.type !== "node") {
-      currentNodeModel.value = null;
-      currentNodeConf.value = null;
-      childNodes.value = [];
-      cancleAddNodeModel();
-      // graph.getNodes().forEach((node: any) => {
-      //   graph.clearItemStates(node);
-      // });
-    }
-  });
+  // 点击 canvas 空白处，不做任何操作
+  // graph.on("click", (ev: any) => {
+  //   if (!ev.item || ev.item._cfg.type !== "node") {
+  //     setBlankAreaActive();
+  //     isOperationButtonsVisible.value = true;
+  //     // clearCurNodeState();
+  //     // cancleAddNodeModel();
+  //     // graph.getNodes().forEach((node: any) => {
+  //     //   graph.clearItemStates(node);
+  //     // });
+  //   }
+  // });
   // 左键单击节点时
   graph.on("node:click", (evt: any) => {
     const { item } = evt;
-    const model = item.getModel();
-    // 切换节点时，需要先清空当前节点信息
+    const model = item.getModel(); // 元素实例的数据模型
+    graph.getNodes().forEach((node: any) => {
+      graph.clearItemStates(node);
+    });
+    item.setState("active", true);
+    console.log("model", model, item.getStates());
     if (model?.showConf?.nodeId !== currentNodeConf?.value?.nodeId) {
+      // 如果点击节点不为当前缓存节点，清空左侧信息区并将当前缓存节点替换为点击节点
       cancleAddNodeModel();
+      currentNodeModel.value = model;
+      currentNodeConf.value = model.showConf;
+      // childNodes.value = [...model.leafNodes, ...model.children];
+      childNodes.value = model.children;
     }
-    currentNodeModel.value = model;
-    currentNodeConf.value = model.showConf;
-    console.log("cur", currentNodeConf.value);
-
-    // childNodes.value = [...model.leafNodes, ...model.children];
-    childNodes.value = model.children;
   });
 };
 const refreshGraph = () => {
   // 每次刷新图后，清空当前节点的信息
-  currentNodeConf.value = null;
-  currentNodeModel.value = null;
-  childNodes.value = [];
+  clearCurNodeState();
   getConfDetailApi({ appId: Number(appId), baseId: Number(baseId), address: "server" }).then((res) => {
     jsonToGraph(res.data);
   });
@@ -810,6 +825,7 @@ onMounted(() => {
 // 节点类型枚举
 const nodeTypeEnum = {
   "0": "根节点",
+  "1": "关系节点",
   "6": "表达式计算算子",
   "14": "操作算子",
   "15": "变量算子",
@@ -828,22 +844,26 @@ const confNameEnum = {
   SingleContextVariable: "单变量",
 };
 const nodeTypeList = [
-  // { name: "Relation", id: 1 },
-  // { name: "Flow", id: 5 },
-  // { name: "Result", id: 6 },
-  // { name: "None", id: 7 },
-  // { name: "节点ID", id: 13 },
   { name: "操作算子", id: 14 },
   { name: "变量算子", id: 15 },
   { name: "参数绑定算子", id: 16 },
+  { name: "None", id: 7 },
+  { name: "节点ID", id: 13 },
+  { name: "关系节点", id: 1 },
+  // { name: "Flow", id: 5 },
+  { name: "表达式计算算子", id: 6 },
 ];
+// 节点 ID 类型只在新增时出现，编辑时不出现
+const filterNodeTypeList = computed(() => {
+  return addNodeModelType.value === "exchange" ? nodeTypeList.filter((t) => t.id !== 13) : nodeTypeList;
+});
 
 const relationTypeList = [
-  { name: "AND", id: 1 },
-  { name: "TRUE", id: 2 },
+  // { name: "AND", id: 1 },
+  // { name: "TRUE", id: 2 },
   { name: "ALL", id: 3 },
   { name: "ANY", id: 4 },
-  { name: "NONE", id: 0 },
+  // { name: "NONE", id: 0 },
   // { name: "P_AND", id: 9 },
   // { name: "P_TRUE", id: 10 },
   // { name: "P_ALL", id: 11 },
@@ -862,13 +882,15 @@ const getChineseName = (target: "nodeTypeEnum" | "confNameEnum", key: string) =>
 };
 
 const confClassList = ref<any[]>([]);
-const confFieldsList = ref<any[]>([]); // 添加节点时的动态输入框列表
 const dynamicForm = ref<any>({}); // 添加节点时动态输入框绑定值
 
-const onConfNameChange = (val: any) => {
-  confFieldsList.value = confClassList.value.find((conf) => conf.clazz === val)?.fields;
+// 添加节点时的动态输入框列表
+const confFieldsList = computed(() => {
+  return confClassList.value.find((conf) => conf.clazz === addNodeModelForm.confName)?.fields ?? [];
+});
+const onConfNameChange = () => {
   dynamicForm.value = {};
-  confFieldsList.value.forEach((conf) => (dynamicForm.value[conf.field] = ""));
+  confFieldsList.value.forEach((conf: any) => (dynamicForm.value[conf.field] = ""));
 };
 
 /**
@@ -878,35 +900,59 @@ const childNodes = ref<any[]>([]); // 展示在右侧子节点区
 const isOperationButtonsVisible = ref(true);
 const addNodeModelType = ref("child");
 const operationTitle = ref("添加子节点");
-const addNodeModelFormOrigin = { name: "", nodeType: 14, relationType: 1, confName: "", multiplexIds: "", confField: "" };
-const addNodeModelForm = reactive({ name: "", nodeType: 14, relationType: 1, confName: "", multiplexIds: "", confField: "" });
+const addNodeModelFormOrigin = { name: "", nodeType: 14, relationType: 4, confName: "", multiplexIds: "", confField: "" };
+const addNodeModelForm = reactive({ name: "", nodeType: 14, relationType: 4, confName: "", multiplexIds: "", confField: "" });
 
 const showAddNodeModel = (type: "child" | "front" | "exchange" = "child") => {
   addNodeModelType.value = type;
-  operationTitle.value = type === "child" ? "添加子节点" : type === "front" ? "添加前置节点" : "节点转换";
+  operationTitle.value = type === "child" ? "添加子节点" : type === "front" ? "添加前置节点" : "编辑节点";
   isOperationButtonsVisible.value = false;
-  selectedNodeType.value = 14;
+  addNodeModelForm.nodeType = 14;
   if (type === "exchange") {
     // console.log("节点转换\n", currentNodeConf.value);
-    addNodeModelForm.name = currentNodeConf.value.nodeName;
-    if (currentNodeConf.value.nodeType === 0) {
-      addNodeModelForm.nodeType = 14;
-      addNodeModelForm.relationType = 7;
-    } else {
-      addNodeModelForm.nodeType = 14;
-      addNodeModelForm.relationType = currentNodeConf.value.nodeType;
+    Object.assign(addNodeModelForm, {
+      name: currentNodeConf.value.nodeName,
+      nodeType: currentNodeConf.value.nodeType,
+      confName: currentNodeConf.value.confName,
+    });
+    getConfLeafInfoApi({ appId, type: addNodeModelForm.nodeType }).then((res) => {
+      confClassList.value = res.data;
+    });
+    if (currentNodeConf.value.confField) {
+      try {
+        dynamicForm.value = JSON.parse(currentNodeConf.value.confField);
+      } catch (error) {
+        console.error(error);
+      }
     }
+    for (const [k, v] of Object.entries(dynamicForm.value)) {
+      if (typeof v === "object") {
+        try {
+          dynamicForm.value[k] = JSON.stringify(v);
+        } catch (error) {
+          dynamicForm.value[k] = v;
+        }
+      }
+    }
+  } else {
+    getConfLeafInfoApi({ appId, type: addNodeModelForm.nodeType }).then((res) => {
+      confClassList.value = res.data;
+    });
   }
-  getConfLeafInfoApi({ appId, type: selectedNodeType.value }).then((res) => {
-    confClassList.value = res.data;
-  });
 };
+// 将当前选中节点置空
+const clearCurNodeState = () => {
+  currentNodeModel.value = null;
+  currentNodeConf.value = null;
+  childNodes.value = [];
+};
+// 清除左右两侧信息区信息
 const cancleAddNodeModel = () => {
   addNodeModelType.value = "";
   isOperationButtonsVisible.value = true;
   // 取消时，还原 addNodeModelForm 为初始值，清空变量现有值
   Object.assign(addNodeModelForm, addNodeModelFormOrigin);
-  confFieldsList.value.length = 0;
+  confClassList.value.length = 0;
   dynamicForm.value = {};
 };
 const submitAddNodeModel = () => {
@@ -919,7 +965,7 @@ const submitAddNodeModel = () => {
   if (currentNodeModel.value.parentId) params.parentId = currentNodeModel.value.parentId;
   if (currentNodeModel.value.nextId) params.nextId = currentNodeModel.value.nextId;
   if (currentNodeModel.value.index) params.index = currentNodeModel.value.index;
-  if (addNodeModelForm.name) params.name = addNodeModelForm.name;
+  if (addNodeModelForm.name && addNodeModelForm.nodeType !== 13) params.name = addNodeModelForm.name;
   if (addNodeModelForm.nodeType) params.nodeType = addNodeModelForm.nodeType;
   if (addNodeModelForm.confName) params.confName = addNodeModelForm.confName;
   if (Object.keys(dynamicForm.value).length) {
@@ -950,10 +996,38 @@ const submitAddNodeModel = () => {
       refreshGraph();
       // 添加结束时，还原 addNodeModelForm 为初始值，清空变量现有值
       Object.assign(addNodeModelForm, addNodeModelFormOrigin);
-      confFieldsList.value.length = 0;
+      confClassList.value.length = 0;
       dynamicForm.value = {};
     }
   });
+};
+const upNode = async () => {
+  await postConfEditApi({
+    appId,
+    baseId,
+    editType: 6,
+    selectId: currentNodeConf.value.nodeId,
+    parentId: currentNodeModel.value.parentId,
+    nextId: currentNodeModel.value.nextId,
+    index: currentNodeModel.value.index,
+    moveTo: currentNodeModel.value.index - 1,
+  });
+  ElMessage.success("success");
+  refreshGraph();
+};
+const downNode = async () => {
+  await postConfEditApi({
+    appId,
+    baseId,
+    editType: 6,
+    selectId: currentNodeConf.value.nodeId,
+    parentId: currentNodeModel.value.parentId,
+    nextId: currentNodeModel.value.nextId,
+    index: currentNodeModel.value.index,
+    moveTo: currentNodeModel.value.index + 1,
+  });
+  ElMessage.success("success");
+  refreshGraph();
 };
 const deleteCurrentNode = () => {
   ElMessageBox.confirm(`确认删除<${currentNodeConf.value.labelName}>节点吗？`, "", {
@@ -978,14 +1052,14 @@ const deleteCurrentNode = () => {
     });
 };
 const onNodeTypeChangeNew = (type: number) => {
-  if (type !== selectedNodeType.value) {
+  if (type !== addNodeModelForm.nodeType) {
     addNodeModelForm.confName = "";
-    confFieldsList.value.length = 0;
+    confClassList.value.length = 0;
     dynamicForm.value = {};
   }
-  selectedNodeType.value = type;
+  addNodeModelForm.nodeType = type;
   if (type !== 1 && type !== 13) {
-    getConfLeafInfoApi({ appId, type: selectedNodeType.value }).then((res) => {
+    getConfLeafInfoApi({ appId, type: addNodeModelForm.nodeType }).then((res) => {
       confClassList.value = res.data;
     });
   }
