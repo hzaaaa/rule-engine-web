@@ -27,6 +27,10 @@ export default defineConfig(({ mode }) => {
       port: viteEnv.VITE_PORT,
       open: viteEnv.VITE_OPEN,
       proxy: {
+        "/api/rule-engine-server/v3": {
+          target: "http://172.16.1.44:900",
+          rewrite: (path) => path.replace(/\/api/, ""),
+        },
         "/api/rule-engine-server/v2": {
           target: "http://172.16.1.44:8123",
           rewrite: (path) => path.replace(/\/api/, ""),

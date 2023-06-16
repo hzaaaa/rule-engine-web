@@ -237,6 +237,7 @@ const menuList = [
 <style scoped lang="scss">
 .el-container {
   width: 100%;
+  min-width: 992px;
   height: 100%;
   .el-aside {
     overflow: inherit;

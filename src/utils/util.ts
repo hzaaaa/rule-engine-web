@@ -1,3 +1,5 @@
+import { ModelItem, ModelTreeItem } from "@/store/interface/model";
+
 /**
  * @description 判断数据类型
  * @param {Any} val 需要判断类型的数据
@@ -146,4 +148,129 @@ export function copyTextToClipboard(copyContent: string) {
     document.execCommand("copy");
     tempInput.remove();
   }
+}
+
+/**
+ * @description 列表转树, 使用哈希降低时间复杂度
+ */
+export function listToTreeHash(list: ModelItem[]): ModelTreeItem[] {
+  const copyList = JSON.parse(JSON.stringify(list)) as ModelItem[];
+
+  // 使用哈希
+  const obj: any = {};
+  copyList.forEach((item) => (obj[item.id] = item));
+
+  const res: ModelTreeItem[] = [];
+  copyList.forEach((item) => {
+    const parent = obj[item.pid];
+    if (parent) {
+      parent.children = parent.children || [];
+      parent.children.push(item);
+    } else {
+      res.push(item);
+    }
+  });
+
+  return res;
+}
+
+/**
+ * @description 树转列表, bfs
+ */
+export function treeToList(tree: ModelTreeItem[]) {
+  const copyTree = JSON.parse(JSON.stringify(tree)) as ModelTreeItem[];
+  const queue = copyTree;
+  const res: ModelItem[] = [];
+
+  function loop(treeArr: ModelTreeItem[]) {
+    while (treeArr && treeArr.length) {
+      const item = treeArr.shift();
+      if (item?.children && item.children.length) {
+        queue.push(...item.children);
+      }
+      delete item?.children;
+      res.push(item!);
+    }
+    return res;
+  }
+
+  return loop(queue);
+}
+
+/**
+ * @description 根据 id 找到树的节点, bfs。返回的是新对象，在其上添加、修改不会改变原对象
+ */
+export function getNodeByIdBFS(tree: any, id: any) {
+  const queue = JSON.parse(JSON.stringify(tree));
+
+  function loop(treeArr: any) {
+    while (treeArr && treeArr.length) {
+      const item = treeArr.shift();
+      if (id === item.id) return item;
+      if (item.children && item.children.length) {
+        treeArr.push(...item.children);
+      }
+    }
+    return null;
+  }
+
+  return loop(queue);
+}
+
+/**
+ * @description 根据 id 找到树的节点, 递归。返回的是引用，在其上添加、修改会改变原对象
+ */
+export function getNodeByIdRecursive(tree: any[], id: any): any {
+  for (let i = 0; i < tree.length; i++) {
+    const item = tree[i];
+    if (id === item.id) return item;
+    if (item.children && item.children.length) {
+      const res = getNodeByIdRecursive(item.children, id);
+      if (res) return res;
+    }
+  }
+  return null;
+}
+
+/**
+ * @description 数组两个元素换位置, 会改变原数组
+ */
+export function swapIndex(arr: any[], index1: number, index2: number) {
+  arr[index1] = arr.splice(index2, 1, arr[index1])[0];
+}
+
+/**
+ * @description 给树状对象计算添加 pid 和 index
+ */
+export function addPidAndIndex(treeObj: any) {
+  function loop(treeArr: any[], pid: any) {
+    for (let i = 0; i < treeArr.length; i++) {
+      const item = treeArr[i];
+      item.index = i;
+      item.pid = pid;
+      if (item.children && item.children.length) {
+        item.children = loop(item.children, item.id);
+      }
+    }
+    return treeArr;
+  }
+  return loop([treeObj], "0")[0];
+}
+
+/**
+ * @description 给树状对象删除 pid 和 index 属性
+ */
+export function deletePidAndIndex(treeObj: any) {
+  function loop(treeArr: any[]) {
+    for (let i = 0; i < treeArr.length; i++) {
+      const item = treeArr[i];
+      delete item.index;
+      delete item.pid;
+      if (item.children && item.children.length) {
+        item.children = loop(item.children);
+      }
+    }
+    return treeArr;
+  }
+  return loop([treeObj])[0];
 }

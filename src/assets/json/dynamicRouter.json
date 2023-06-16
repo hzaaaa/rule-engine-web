@@ -99,6 +99,59 @@
       ]
     },
     {
+      "path": "/app/list_v3",
+      "name": "AppList_v3",
+      "component": "/config_v3/AppList",
+      "meta": {
+        "icon": "MessageBox",
+        "title": "规则配置_v3",
+        "isHide": false,
+        "isFull": false
+      },
+      "children": [
+        {
+          "path": "/model/list_v3",
+          "name": "ModelList_v3",
+          "component": "/config_v3/ModelList",
+          "meta": {
+            "icon": "MessageBox",
+            "title": "模型列表_v3",
+            "activeMenu": "/app/list_v3",
+            "isHide": true,
+            "isFull": false
+          },
+          "children": [
+            {
+              "path": "/model/version_v3",
+              "name": "ModelVersion_v3",
+              "component": "/config_v3/ModelVersion",
+              "meta": {
+                "icon": "MessageBox",
+                "title": "模型版本_v3",
+                "activeMenu": "/app/list_v3",
+                "isHide": true,
+                "isFull": false
+              },
+              "children": [
+                {
+                  "path": "/model/info_v3",
+                  "name": "ModelInfo_v3",
+                  "component": "/config_v3/ModelInfo",
+                  "meta": {
+                    "icon": "MessageBox",
+                    "title": "模型详情_v3",
+                    "activeMenu": "/app/list_v3",
+                    "isHide": true,
+                    "isFull": false
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "path": "/task",
       "name": "Task",
       "redirect": "/task/list",
