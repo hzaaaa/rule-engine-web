@@ -1,0 +1,157 @@
+.login-container {
+  overflow: hidden;
+  height: 100%;
+  min-height: 500px;
+  background-image: url("@/assets/images/login/login_bg.png");
+  background-size: cover;
+  .login-content {
+    padding: 38px 0 108px 40px;
+    border-radius: 20px;
+    background: #fff;
+    box-shadow: 0 4px 6px 1px rgb(235 237 239 / 80%);
+    .login-logo {
+      // width: 125px;
+      // height: 28px;
+      img {
+        width: 125px;
+        height: 28px;
+      }
+    }
+    .login-main {
+      display: flex;
+      margin-top: 30px;
+      .login-left {
+        // padding-top: 47px;
+        margin: 40px 0 0 50px;
+
+        // .logo-left {
+        width: 467px;
+        height: 346px;
+        background-image: url("@/assets/images/login/login_img.png");
+
+        // }
+      }
+      .login-right {
+        // display: flex;
+        // justify-content: center;
+        margin-left: 50px;
+        padding: 0 38px;
+        border-left: 1px solid #e6ecf2;
+        height: 420px;
+
+        // width: 360px;
+        .platform-name-img {
+          margin: 0 0 14px;
+          img {
+            width: 318px;
+            height: 49px;
+
+            width: calc(318px * 0.8);
+            height: calc(49px * 0.9);
+            position: relative;
+            left: 27px;
+          }
+        }
+        .login-box {
+          display: flex;
+          flex-direction: column;
+          box-sizing: border-box;
+          width: 250px;
+          .login-form {
+            margin-left: 20px;
+            .el-form-item {
+              margin-bottom: 36px;
+              width: 250px;
+              :deep(.el-form-item__label) {
+                margin-bottom: 5px;
+                height: 20px;
+                font-weight: normal;
+              }
+              :deep(.el-input__wrapper) {
+                height: 34px;
+              }
+            }
+            .el-form-item:last-child {
+              margin-bottom: 0;
+            }
+            .captcha {
+              :deep(.el-form-item__content) {
+                .el-input {
+                  .el-input__wrapper {
+                    border: 1px solid var(--el-input-border-color, var(--el-border-color));
+                    border-right: none;
+                    box-shadow: none;
+                  }
+                  .el-input-group__append {
+                    padding: 1px 10px 1px 0;
+                    border: 1px solid var(--el-input-border-color, var(--el-border-color));
+                    border-left: none;
+                    background-color: #fff;
+                    box-shadow: none;
+                  }
+                  .el-input__wrapper.is-focus {
+                    border-color: var(--el-color-primary);
+                    + .el-input-group__append {
+                      border-color: var(--el-color-primary);
+                    }
+                  }
+                }
+              }
+            }
+            .captcha.is-error {
+              :deep(.el-form-item__content) {
+                .el-input__wrapper {
+                  border-color: var(--el-color-danger);
+                }
+                .el-input-group__append {
+                  border-color: var(--el-color-danger);
+                }
+                .el-input__wrapper.is-focus {
+                  border-color: var(--el-color-danger);
+                  + .el-input-group__append {
+                    border-color: var(--el-color-danger);
+                  }
+                }
+              }
+            }
+            .login-captcha {
+              display: table-cell;
+              border-left: none;
+              width: 100px;
+              height: 30px;
+              cursor: pointer;
+              vertical-align: middle;
+              text-align: center;
+            }
+            .login-btn {
+              display: flex;
+              justify-content: center;
+              margin-top: 28px;
+              width: 250px;
+              :deep(.el-button) {
+                border-radius: 4px;
+                width: 100%;
+                height: 36px;
+                box-shadow: 0 3px 6px 1px #dbedff;
+                span {
+                  font-weight: 400;
+                  font-size: 16px;
+                  color: #fff;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media screen and (width >= 1920px), screen and (-webkit-min-device-pixel-ratio: 2), screen and (max--moz-device-pixel-ratio: 2) {
+  .login-container {
+    background-image: url("@/assets/images/login/login_bg2x.png");
+    .login-left {
+      background-image: url("@/assets/images/login/login_img@2x.png");
+    }
+  }
+}
