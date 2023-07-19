@@ -13,7 +13,7 @@ export const useAuthStore = defineStore({
     // 按钮权限列表
     authButtonList: <string[]>[],
     // 模拟数据：动态路由
-    mockDynamicMenuList: <Menu.MenuOptions[]>[],
+    mockDynamicMenuList: <any[]>[],
   }),
   getters: {
     // 后端返回的原始菜单列表

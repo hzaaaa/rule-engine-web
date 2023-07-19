@@ -32,7 +32,7 @@ export const loginApi = (params: Login.ReqLoginForm) => {
 /**
  * @name 获取验证码图片
  */
-export const captcha = () => {
+export const getCaptchaApi = () => {
   return http.get<Login.ResCaptcha>(PORTAuth + `/auth/captcha`);
 };
 /**

@@ -23,7 +23,7 @@ const routes: RouteRecordRaw[] = [
   {
     path: "/login",
     name: "Login",
-    component: () => import("@/views/Login.vue"), // 注意这里要带上 文件后缀.vue
+    component: () => import("@/views/login/index.vue"), // 注意这里要带上 文件后缀.vue
   },
   {
     path: "/layout",
@@ -31,6 +31,17 @@ const routes: RouteRecordRaw[] = [
     component: Layout,
     redirect: "/home",
     children: [],
+  },
+  {
+    path: "/baseinfo",
+    component: () => import("@/layouts/Layout.vue"),
+    children: [
+      {
+        path: "",
+        name: "baseinfo",
+        component: () => import("@/views/info/Info.vue"),
+      },
+    ], // 注意这里要带上 文件后缀.vue
   },
   {
     path: "/404",

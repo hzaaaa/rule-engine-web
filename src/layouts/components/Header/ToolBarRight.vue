@@ -16,7 +16,7 @@ import Avatar from "./components/Avatar.vue";
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: 0 30px;
+  // margin: 0 30px;
   .username {
     margin: 0 20px 0 0;
     font-size: 15px;

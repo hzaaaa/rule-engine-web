@@ -1,315 +1,268 @@
 <template>
-  <div class="dept">
-    <el-button @click="add" type="primary">新增</el-button>
-    <!--表格渲染-->
-    <el-table :data="tableData" row-key="id" :tree-props="{ children: 'childrenList' }" style="font-size: 12px">
-      <el-table-column prop="username" label="用户名"></el-table-column>
-      <el-table-column prop="nickName" label="昵称"></el-table-column>
-      <el-table-column label="性别" width="80px">
-        <template #default="scope">
-          {{ scope.row.gender === 1 ? "男" : "女" }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="phone" label="电话"></el-table-column>
+  <div class="common-layout-system">
+    <el-form v-model="queryForm">
+      <el-row>
+        <el-col :span="24">
+          <div class="wrap" style="display: flex">
+            <el-form-item label="用户名：">
+              <el-input v-model="queryForm.username" style="width: 320px" clearable></el-input>
+            </el-form-item>
+            <el-button type="primary" @click="searchByQueryForm">查询</el-button>
+            <el-button @click="doReset">重置</el-button>
+          </div>
+        </el-col>
+      </el-row>
+    </el-form>
+
+    <div class="operat-buttons">
+      <el-button type="primary" @click="openDrawer('新建')">新建</el-button>
+      <div class="space"></div>
+    </div>
+
+    <el-table
+      class="common-table"
+      v-loading="tableLoading"
+      :data="tableDataList"
+      cell-class-name="table-cell"
+      header-cell-class-name="header-cell"
+      border
+    >
+      <el-table-column label="用户名" prop="username"></el-table-column>
+      <el-table-column label="姓名" prop="nickName"></el-table-column>
+      <el-table-column prop="phone" label="联系方式"></el-table-column>
       <el-table-column prop="email" label="邮箱"></el-table-column>
-      <el-table-column prop="deptId" label="部门" width="80px"></el-table-column>
-      <el-table-column prop="enabled" label="状态" width="80px">
+      <el-table-column prop="roleName" label="角色"></el-table-column>
+      <el-table-column prop="remark" label="备注"></el-table-column>
+      <el-table-column prop="enabled" label="状态">
+        <template #header>
+          <div class="flex-align-center">
+            状态
+            <el-dropdown>
+              <el-icon class="ml5"><Filter /></el-icon>
+              <template #dropdown>
+                <el-dropdown-menu>
+                  <el-dropdown-item @click="changeEnableParam(null)">全部</el-dropdown-item>
+                  <el-dropdown-item @click="changeEnableParam(1)">已启用</el-dropdown-item>
+                  <el-dropdown-item @click="changeEnableParam(0)">已停用</el-dropdown-item>
+                </el-dropdown-menu>
+              </template>
+            </el-dropdown>
+          </div>
+        </template>
         <template #default="scope">
-          <el-switch
-            v-model="scope.row.enabled"
-            :active-value="1"
-            :inactive-value="0"
-            @change="changeEnabled(scope.row, scope.row.enabled)"
-          ></el-switch>
+          <span v-if="scope.row.enabled === 1" style="color: #ff9e2e">{{ "已启用" }}</span>
+          <span v-else style="color: #a8abb2">{{ "已停用" }}</span>
         </template>
       </el-table-column>
-      <el-table-column prop="createTime" label="创建日期" width="150px"></el-table-column>
-      <el-table-column label="操作" width="120px">
+      <el-table-column label="操作" width="410px" header-align="center" align="center">
         <template #default="scope">
-          <el-button size="small" type="primary" @click="handleEdit(scope.row)">
-            <el-icon><EditPen /></el-icon>
-          </el-button>
-          <el-button size="small" type="danger" @click="handleDelete(scope.row)">
-            <el-icon><Delete /></el-icon>
-          </el-button>
+          <el-button type="primary" link v-permission="['authUser:edit']" @click="openDrawer('编辑', scope.row)">编辑</el-button>
+          <el-button type="primary" link v-permission="['authUser:resetPassword']" @click="resetPwdInnerAccount(scope.row.id)"
+            >重置密码</el-button
+          >
+
+          <el-button
+            type="primary"
+            v-permission="['authUser:enableDisable']"
+            link
+            @click="enableInnerAccount(scope.row.id, scope.row.enabled)"
+            >{{ scope.row.enabled ? "停用" : "启用" }}</el-button
+          >
         </template>
       </el-table-column>
     </el-table>
-
-    <!-- 表单组件 -->
-    <el-dialog title="新增用户" v-model="dialogVisible">
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="80px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form.username"></el-input>
-        </el-form-item>
-        <el-form-item label="用户昵称" prop="nickName">
-          <el-input v-model="form.nickName"></el-input>
-        </el-form-item>
-        <el-form-item label="部门ID" prop="deptId">
-          <el-input v-model.number="form.deptId"></el-input>
-        </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input type="number" v-model="form.phone"></el-input>
-        </el-form-item>
-        <el-form-item label="用户邮箱" prop="email">
-          <el-input v-model="form.email"></el-input>
-        </el-form-item>
-        <el-form-item label="用户头像" prop="avatarUrl">
-          <el-input v-model="form.avatarUrl"></el-input>
-        </el-form-item>
-        <el-form-item label="登录密码" prop="password">
-          <el-input v-model="form.password"></el-input>
-        </el-form-item>
-        <el-form-item label="用户角色" prop="roleIdList">
-          <el-input v-model="form.roleIdList" placeholder="若输入多个角色，用"></el-input>
-        </el-form-item>
-        <el-form-item label="用户性别">
-          <el-radio-group v-model="form.gender">
-            <el-radio :label="1">男</el-radio>
-            <el-radio :label="0">女</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="用户状态">
-          <el-radio-group v-model="form.enabled">
-            <el-radio :label="1">激活</el-radio>
-            <el-radio :label="0">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary" @click="submitForm(formRef)">确认</el-button>
-        </span>
-      </template>
-    </el-dialog>
-
-    <!-- 编辑部门 -->
-    <el-dialog title="编辑部门" v-model="dialogVisible2">
-      <el-form ref="formRef2" :model="form2" :rules="rules" label-width="80px">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model="form2.username"></el-input>
-        </el-form-item>
-        <el-form-item label="用户昵称" prop="nickName">
-          <el-input v-model="form2.nickName"></el-input>
-        </el-form-item>
-        <el-form-item label="部门ID" prop="deptId">
-          <el-input v-model.number="form2.deptId"></el-input>
-        </el-form-item>
-        <el-form-item label="手机号" prop="phone">
-          <el-input type="number" v-model="form2.phone"></el-input>
-        </el-form-item>
-        <el-form-item label="用户邮箱" prop="email">
-          <el-input v-model="form2.email"></el-input>
-        </el-form-item>
-        <el-form-item label="用户头像" prop="avatarUrl">
-          <el-input v-model="form2.avatarUrl"></el-input>
-        </el-form-item>
-        <el-form-item label="用户角色" prop="roleIdList">
-          <el-input v-model="form2.roleIdList"></el-input>
-        </el-form-item>
-        <el-form-item label="用户性别">
-          <el-radio-group v-model="form2.gender">
-            <el-radio :label="1">男</el-radio>
-            <el-radio :label="0">女</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="用户状态">
-          <el-radio-group v-model="form2.enabled">
-            <el-radio :label="1">激活</el-radio>
-            <el-radio :label="0">禁用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-      </el-form>
-      <template #footer>
-        <span class="dialog-footer">
-          <el-button @click="dialogVisible2 = false">取消</el-button>
-          <el-button type="primary" @click="submitForm2(formRef2)">确认</el-button>
-        </span>
-      </template>
-    </el-dialog>
+    <div class="pagination-block">
+      <el-pagination
+        :total="pageParams.total"
+        :current-page="pageParams.pageNum"
+        :page-size="pageParams.pageSize"
+        @current-change="handleCurrentPageChange"
+        layout="total, prev, pager, next, jumper"
+        :page-sizes="[10, 20, 30, 40]"
+        @size-change="handleSizeChange"
+        background
+      >
+      </el-pagination>
+    </div>
+    <AccountDrawer ref="drawerRef" @refreshData="refreshData" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { getUserListApi, postUserAddApi, postUserDeleteApi, postUserUpdateApi, getUserInfoApi } from "@/api/system/user";
-import { Delete, EditPen } from "@element-plus/icons-vue";
-import { FormInstance, FormRules } from "element-plus";
-import { onMounted, reactive, ref } from "vue";
+import { ref, reactive } from "vue";
+import useListPageHook from "@/hooks/listPage";
+import AccountDrawer from "./AccountDrawer.vue";
+import ResetPasswordDialog from "../components/ResetPasswordDialog.vue";
+import RoleAuthorityDialog from "../components/RoleAuthorityDialog.vue";
+import DataAuthorityDrawer from "../components/DataAuthorityDrawer.vue";
+import {
+  getUserListApi,
+  postUserPasswordResetApi,
+  // enableInnerAccountApi,
+  postUserAddApi,
+  postUserUpdateApi,
+} from "@/api/system/user";
+import { ElMessage } from "element-plus";
 
-const add = () => {
-  console.log("add");
-  dialogVisible.value = true;
+// 账户新建编辑抽屉
+const drawerRef = ref<InstanceType<typeof AccountDrawer> | null>(null);
+const openDrawer = (title: string, row: any = {}) => {
+  console.log(title, row);
+  const params = {
+    title,
+    isEdit: title === "编辑",
+    row: { ...row },
+    api: title === "新建" ? postUserAddApi : postUserUpdateApi,
+  };
+  drawerRef.value?.acceptParams(params);
+};
+// 重置密码弹窗
+const resetPasswordDialogRef = ref<InstanceType<typeof ResetPasswordDialog> | null>(null);
+const openResetPasswordDialog = (id: number, pwd: string) => {
+  const params = {
+    id: id,
+    pwd: pwd,
+  };
+  resetPasswordDialogRef.value?.acceptParams(params);
 };
 
-const tableData = ref<any>([]);
-onMounted(() => {
-  getUserListApi().then((res) => {
-    // console.log("getDeptInfoApi 无参数", res.data);
-    if (res.data.list) tableData.value = res.data.list;
-  }); // 通过，tree 比 info 多包一层数组
-});
+//停用/启用内部用户
+const enableInnerAccount = async (userId: number, enabled: number) => {
+  const params = {
+    userId: userId,
+    enabled: enabled == 0 ? 1 : 0,
+  };
+  // console.log(params);
+  try {
+    // await enableInnerAccountApi(params);
 
-const changeEnabled = (data: any, val: any) => {
-  ElMessageBox.confirm(`此操作将${data.enabled === 0 ? "禁用" : "激活"} ${data.username}，是否继续`, "提示", {
-    confirmButtonText: "确定",
-    cancelButtonText: "取消",
-    type: "warning",
-  })
-    .then(() => {
-      console.log("changeEnabled", data);
-      console.log("change val", val);
-      let params = <any>{
-        id: data.id,
-        enabled: data.enabled,
-      };
-      postUserUpdateApi({ ...params }).then((res) => {
-        console.log("postDeptAddApi 带参数", res.data);
-        getUserListApi().then((res) => {
-          // console.log("getDeptInfoApi 无参数", res.data);
-          if (res.data.list) tableData.value = res.data.list;
-        }); // 通过，tree 比 info 多包一层数组
-      });
-    })
-    .catch(() => {
-      // console.log("cancle", data.enabled);
-      if (data.enabled === 0) {
-        data.enabled = 1;
-      } else {
-        data.enabled = 0;
-      }
-    });
+    // setTimeout(() => {
+    refreshData();
+    ElMessage.success("状态更新成功");
+    // }, 2000);
+  } catch (err) {
+    console.log(err);
+    // ElMessage.error("操作失败");
+  }
+};
+// 重置密码
+const resetPwdInnerAccount = async (userId: number) => {
+  const params = {
+    userId: userId,
+  };
+
+  try {
+    const { data } = await postUserPasswordResetApi(params);
+    ElMessage.success("重置密码成功");
+    // openResetPasswordDialog(userId, data);
+  } catch (err) {
+    console.log(err);
+  }
 };
 
-const handleEdit = (row: any) => {
-  console.log("edit", row);
-  getUserInfoApi({ userId: row.id }).then((res) => {
-    // console.log("getDeptInfoApi 无参数", res.data);
-    console.log("res", res.data);
-    if (res.data?.sysUser) {
-      let userInfo = res.data.sysUser;
-      let roleInfo = res.data.sysRoleList;
-      form2.id = row.id;
-      if (userInfo.username) form2.username = userInfo.username;
-      if (userInfo.nickName) form2.nickName = userInfo.nickName;
-      if (userInfo.deptId) form2.deptId = userInfo.deptId;
-      if (userInfo.phone) form2.phone = userInfo.phone;
-      if (userInfo.email) form2.email = userInfo.email;
-      if (userInfo.avatarUrl) form2.avatarUrl = userInfo.avatarUrl;
-      if (userInfo.gender) form2.gender = userInfo.gender;
-      if (userInfo.enabled) form2.enabled = userInfo.enabled;
-      if (roleInfo.length) form2.roleIdList = roleInfo.map((role: any) => role.id).toString();
-    }
-  }); // 通过，tree 比 info 多包一层数组
-  dialogVisible2.value = true;
-};
-const handleDelete = (row: any) => {
-  console.log("delete", row);
-  postUserDeleteApi({ id: row.id }).then((res) => {
-    console.log("postDeptDeleteApi 带参数", res.data);
-    getUserListApi().then((res) => {
-      // console.log("getDeptInfoApi 无参数", res.data);
-      if (res.data.list) tableData.value = res.data.list;
-    }); // 通过，tree 比 info 多包一层数组
-  }); // **未通过，insufficient permissions
+const changeEnableParam = (value: any) => {
+  queryForm.value.enabled = value;
+  searchByQueryForm();
+  ElMessage.success("列表更新成功");
 };
 
-const dialogVisible = ref(false);
-const formRef = ref<FormInstance>();
-const form = reactive({
+const queryFormRaw = {
   username: "",
-  nickName: "",
-  deptId: null,
-  phone: "",
-  email: "",
-  avatarUrl: "",
-  password: "123456",
-  roleIdList: null,
-  gender: null,
   enabled: null,
-});
-const rules = reactive<FormRules>({
-  username: [{ required: true, message: "请输入用户名", trigger: "blur" }],
-  password: [{ required: true, message: "请输入用户密码", trigger: "blur" }],
-  phone: [{ required: true, message: "请输入用户手机号", trigger: "blur" }],
-  deptId: [{ required: true, message: "请输入用户部门ID", trigger: "blur" }],
-});
-const submitForm = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.validate((valid) => {
-    if (valid) {
-      dialogVisible.value = false;
-      let params = <any>{
-        username: form.username,
-        password: form.password,
-        phone: form.phone,
-        deptId: form.deptId,
-      };
-      if (form.nickName) params.nickName = form.nickName;
-      if (form.email) params.email = form.email;
-      if (form.avatarUrl) params.avatarUrl = form.avatarUrl;
-      if (form.roleIdList) params.roleIdList = form.roleIdList;
-      if (form.gender) params.gender = form.gender;
-      if (form.enabled) params.enabled = form.enabled;
-      postUserAddApi({ ...params }).then((res) => {
-        console.log("postDeptAddApi 带参数", res.data);
-        getUserListApi().then((res) => {
-          // console.log("getDeptInfoApi 无参数", res.data);
-          if (res.data.list) tableData.value = res.data.list;
-        }); // 通过，tree 比 info 多包一层数组
-      });
-    } else {
-      console.log("error submit");
-      return false;
-    }
-  });
 };
 
-const dialogVisible2 = ref(false);
-const formRef2 = ref<FormInstance>();
-const form2 = reactive({
-  id: null,
-  username: "",
-  nickName: "",
-  deptId: null,
-  phone: "",
-  email: "",
-  avatarUrl: "",
-  password: "123456",
-  roleIdList: null,
-  gender: null,
-  enabled: null,
-});
-const submitForm2 = (formEl: FormInstance | undefined) => {
-  if (!formEl) return;
-  formEl.validate((valid) => {
-    if (valid) {
-      dialogVisible2.value = false;
-      let params = <any>{
-        id: form2.id,
-      };
-      if (form2.username) params.username = form2.username;
-      if (form2.nickName) params.nickName = form2.nickName;
-      if (form2.deptId) params.deptId = form2.deptId;
-      if (form2.phone) params.phone = form2.phone;
-      if (form2.email) params.email = form2.email;
-      if (form2.avatarUrl) params.avatarUrl = form2.avatarUrl;
-      if (form2.roleIdList) params.roleIdList = form2.roleIdList;
-      if (form2.gender) params.gender = form2.gender;
-      if (form2.enabled) params.enabled = form2.enabled;
-      postUserUpdateApi({ ...params }).then((res) => {
-        console.log("postDeptAddApi 带参数", res.data);
-        getUserListApi().then((res) => {
-          // console.log("getDeptInfoApi 无参数", res.data);
-          if (res.data.list) tableData.value = res.data.list;
-        }); // 通过，tree 比 info 多包一层数组
-      });
-    } else {
-      console.log("error submit");
-      return false;
-    }
-  });
-};
+const beanInfo = {};
+
+let {
+  tableLoading,
+  tableMaxHeight,
+  pageParams,
+  tableDataList,
+  handleCurrentPageChange,
+  handleSizeChange,
+  resetPageToOne,
+  refreshData, //刷新按钮
+
+  drawer,
+  employeeRow,
+  onAddDrawer,
+  onEditDrawer,
+  searchByQueryForm,
+  subData,
+
+  queryForm,
+  doReset,
+} = useListPageHook(
+  // getCompanyListApi,
+  getUserListApi,
+
+  beanInfo,
+  queryFormRaw
+);
 </script>
 
-<style scoped lang="scss"></style>
+<style lang="scss" scoped>
+// 表单页面通用布局
+.common-layout-system {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding-left: 35px;
+  padding-right: 28px;
+  padding-top: 22px;
+  border-radius: 10px;
+
+  // display: flex;
+  height: fit-content;
+  background: #fff;
+  .el-form {
+    margin-bottom: 0;
+    .wrap {
+      flex-wrap: wrap;
+      .el-form-item {
+        margin-bottom: 0;
+        .el-input {
+          width: 320px;
+        }
+      }
+      .el-button {
+        margin-left: 10px;
+        width: 72px;
+        &:first-of-type {
+          margin-left: 20px;
+        }
+      }
+    }
+  }
+  .el-select {
+    width: 100%;
+  }
+  .search-buttons {
+    display: flex;
+    flex-direction: row-reverse;
+    margin-bottom: 20px;
+  }
+  .operat-buttons {
+    display: flex;
+    margin-top: 26px;
+    margin-bottom: 12px;
+    background-color: #fff;
+    .space {
+      flex: 1;
+    }
+  }
+  .pagination-block {
+    display: flex;
+    flex-direction: row-reverse;
+    margin: 29px 0;
+
+    // margin-left: 30px;
+    // margin-right: 30px;
+  }
+  :deep(.el-card__body) {
+    padding: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+}
+</style>
