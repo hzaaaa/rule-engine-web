@@ -8,7 +8,7 @@ export default (getListApi: Function, beanInfo: any, queryFormRaw: any, getUseQu
     pageNum: 1,
     pageSize: 10,
     total: 0,
-    pageSizesList: [10],
+    pageSizesList: [10, 20, 30, 40],
   });
   let useQueryParams = {};
 
