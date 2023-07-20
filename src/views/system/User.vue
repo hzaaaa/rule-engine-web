@@ -106,8 +106,7 @@ import { ref, reactive } from "vue";
 import useListPageHook from "@/hooks/listPage";
 import AccountDrawer from "./AccountDrawer.vue";
 import ResetPasswordDialog from "./ResetPasswordDialog.vue";
-import RoleAuthorityDialog from "../components/RoleAuthorityDialog.vue";
-import DataAuthorityDrawer from "../components/DataAuthorityDrawer.vue";
+
 import {
   getUserListApi,
   postUserPasswordResetApi,
