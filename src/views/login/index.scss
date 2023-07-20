@@ -38,6 +38,9 @@
         padding: 0 38px;
         border-left: 1px solid #e6ecf2;
         height: 420px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
 
         // width: 360px;
         .platform-name-img {

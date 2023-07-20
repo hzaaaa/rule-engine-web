@@ -194,6 +194,18 @@
           }
         }
       ]
+    },
+    {
+      "path": "/system/user",
+      "name": "system_user",
+      "component": "/system/User",
+      "meta": {
+        "icon": "MessageBox",
+        "title": "用户管理",
+        "isHide": false,
+        "isFull": false
+      },
+      "children": []
     }
   ]
 }

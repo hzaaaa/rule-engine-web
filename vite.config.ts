@@ -31,6 +31,10 @@ export default defineConfig(({ mode }) => {
           target: "http://172.16.1.44:900",
           rewrite: (path) => path.replace(/\/api/, ""),
         },
+        "/api/rule-engine-auth": {
+          target: "http://172.16.1.44:8126",
+          rewrite: (path) => path.replace(/\/api/, ""),
+        },
         "/api/rule-engine-server/v2": {
           target: "http://172.16.1.44:8123",
           rewrite: (path) => path.replace(/\/api/, ""),

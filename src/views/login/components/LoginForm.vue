@@ -35,7 +35,7 @@ import { ref, reactive, onBeforeMount } from "vue";
 import { loginApi, getCaptchaApi } from "@/api/login/login";
 import { useAuthStore } from "@/store/auth";
 import { useUserStore } from "@/store/user";
-import { useRouter } from "vue-router";
+import { useRouter, useRoute } from "vue-router";
 // import { initDynamicRouter } from "@/routers/login/dynamicRouter";
 
 import type { FormInstance, FormRules } from "element-plus";
@@ -43,6 +43,7 @@ import { ElMessage } from "element-plus";
 // import { Base64 } from "js-base64";
 
 const authStore = useAuthStore();
+const route = useRoute();
 const router = useRouter();
 const userStore = useUserStore();
 const showCaptcha = ref(false);
@@ -85,17 +86,20 @@ const login = async (formEl: FormInstance | undefined) => {
     try {
       const { data } = await loginApi(loginForm);
       console.log(data);
-      // userStore.setToken(Base64.encode(data.token));
+
       userStore.setToken(data.token);
       userStore.setUserInfo(data.userInfoVo);
       userStore.setId(data.userInfoVo.sysUser.id);
       userStore.setUserName(data.userInfoVo.sysUser.username);
       // authStore.setAuthOriginMenuList(data.userInfoVo.menuVoList);
 
-      // 检查ip
       // await initDynamicRouter();
       // await authStore.getAuthButtonList();
-      router.push({ path: "/" });
+      if (!route.query?.redirect) {
+        router.push("/");
+      } else {
+        router.push({ path: route.query?.redirect as string, query: JSON.parse(route.query?.params as string) });
+      }
     } catch (err) {
       console.warn(err);
     }

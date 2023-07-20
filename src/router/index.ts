@@ -3,6 +3,7 @@ import Layout from "@/layouts/Layout.vue";
 import { useAuthStore } from "@/store/auth";
 import { initDynamicRouter } from "./dynamicRouter";
 // import { useGlobalStore } from "@/store";
+import { useUserStore as useGlobalStore } from "@/store/user";
 
 const routes: RouteRecordRaw[] = [
   {
@@ -203,7 +204,7 @@ const router = createRouter({
 router.beforeEach(async (to, from, next) => {
   // console.log("from", from);
   // console.log("to", to);
-  /*
+
   const globalStore = useGlobalStore();
 
   // 1. 如果访问登录页，没有 token 直接放行，有 token 停留在当前页
@@ -219,18 +220,17 @@ router.beforeEach(async (to, from, next) => {
   }
 
   // 3. 如果没有菜单列表，重新请求菜单列表并添加动态路由（手动刷新、输入地址跳转时）
-  const authStore = useAuthStore();
-  if (!authStore.authMenuList.length) {
-    await initDynamicRouter();
-    return next({ ...to, replace: true });
-  }
+  // const authStore = useAuthStore();
+  // if (!authStore.authMenuList.length) {
+  //   await initDynamicRouter();
+  //   return next({ ...to, replace: true });
+  // }
 
-  // 4. 如果在路由黑名单，直接跳转 404 页面
-  if (blackList.includes(to.path)) {
-    next("/404");
-    return;
-  }
-*/
+  // // 4. 如果在路由黑名单，直接跳转 404 页面
+  // if (blackList.includes(to.path)) {
+  //   next("/404");
+  //   return;
+  // }
 
   // 3. 如果没有菜单列表，重新请求菜单列表并添加动态路由（手动刷新、输入地址跳转时）
   const authStore = useAuthStore();

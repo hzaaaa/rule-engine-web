@@ -5,15 +5,19 @@
         <div class="title">个人信息</div>
         <div class="row">
           <div class="label">用户名</div>
-          <div class="content">{{ userStore?.userStore?.userStore?.username }}</div>
+          <div class="content">{{ userInfo.username || "--" }}</div>
+        </div>
+        <div class="row">
+          <div class="label">姓名</div>
+          <div class="content">{{ userInfo.nickName || "--" }}</div>
         </div>
         <div class="row">
           <div class="label">手机号</div>
-          <div class="content">{{ userStore?.userStore?.userStore?.phone }}</div>
+          <div class="content">{{ userInfo.phone || "--" }}</div>
         </div>
         <div class="row">
           <div class="label">邮箱</div>
-          <div class="content">{{ userStore?.userStore?.userStore?.email }}</div>
+          <div class="content">{{ userInfo.email || "--" }}</div>
         </div>
         <div class="row">
           <div class="label">登录密码</div>
@@ -23,17 +27,9 @@
         </div>
         <div class="row">
           <div class="label">创建时间</div>
-          <div class="content">{{ userStore?.userStore?.userStore?.createTime }}</div>
+          <div class="content">{{ userStore?.userInfo?.sysUser?.createTime || "--" }}</div>
         </div>
       </div>
-      <!-- <div class="separator"></div>
-      <div class="down">
-        <div class="title">公司信息</div>
-        <div class="row">
-          <div class="label">公司名称</div>
-          <div class="content">{{ userStore?.companyInfo?.companyName }}</div>
-        </div>
-      </div> -->
     </el-card>
 
     <PasswordDialog ref="passDialogRef" @submit="updatePassword" />
@@ -44,7 +40,7 @@
 import { useUserStore } from "@/store/user";
 import { defineAsyncComponent, ref } from "vue";
 
-import { postUserPasswordUpdateApi } from "@/api/system/user";
+import { postUserPasswordUpdateApi, getUserInfoApi } from "@/api/system/user";
 import { ElMessage } from "element-plus";
 
 // 引入组件
@@ -68,6 +64,10 @@ const updatePassword = (params: any) => {
     }
   });
 };
+const userInfo = ref<any>({});
+getUserInfoApi({ userId: userStore.id }).then((res: any) => {
+  userInfo.value = res.data;
+});
 </script>
 
 <style scoped lang="scss">

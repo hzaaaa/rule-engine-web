@@ -1,6 +1,6 @@
 // api/index.ts
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosError, AxiosResponse } from "axios";
-import { useGlobalStore } from "@/store";
+import { useUserStore } from "@/store/user";
 import router from "@/router";
 
 // * 请求响应参数(不包含data)
@@ -39,9 +39,9 @@ class RequestHttp {
      * token校验(JWT) : 接受服务器返回的token,存储到vuex/pinia/本地储存当中
      */
     this.service.interceptors.request.use(
-      (config: AxiosRequestConfig) => {
-        const globalStore = useGlobalStore();
-        const token: string = globalStore.token;
+      (config: any) => {
+        const userStore = useUserStore();
+        const token: string = userStore.token;
         // 给每个请求添加 Authorization 请求头，将用户 token 传到后端
         if (token && config.headers && typeof config.headers.set === "function") {
           config.headers.set("Authorization", `Bearer ${token}`);
@@ -64,9 +64,9 @@ class RequestHttp {
           return response;
         }
         const { data } = response;
-        const globalStore = useGlobalStore();
+        const userStore = useUserStore();
         if (data.code == ResultEnum.OVERDUE) {
-          globalStore.setToken("");
+          userStore.setToken("");
           router.replace("/");
           return Promise.reject(data);
         }

@@ -11,18 +11,18 @@ export const getUserListApi = (params?: any) => {
 };
 
 /**
- * @name 获取用户信息 info
+ * @name 获取用详情 info
  */
 export const getUserInfoApi = (params?: any) => {
   // console.warn("获取用户信息");
-  return http.get<any>(PORTAuth + `/user/info?${qs.stringify(params)}`);
+  return http.get<any>(PORTAuth + `/user/${params.userId}`);
 };
 
 /**
  * @name 用户添加 add
  */
 export const postUserAddApi = (params: any) => {
-  return http.post(PORTAuth + `/user/add`, params);
+  return http.post(PORTAuth + `/user`, params);
   // return http.post(PORTAuth + `/user/add`);
   // return http.post<Login.ResLogin>(PORT1 + `/user/add`, params, { headers: { noLoading: true } }); // 正常 post json 请求  ==>  application/json
   // return http.post<Login.ResLogin>(PORT1 + `/user/add`, {}, { params }); // post 请求携带 query 参数  ==>  ?username=admin&password=123456
@@ -34,7 +34,7 @@ export const postUserAddApi = (params: any) => {
  * @name 用户修改 update
  */
 export const postUserUpdateApi = (params: any) => {
-  return http.post(PORTAuth + `/user/update`, params);
+  return http.post(PORTAuth + `/user/edit`, params);
 };
 
 /**
@@ -48,12 +48,22 @@ export const postUserDeleteApi = (params: any) => {
  * @name 用户修改密码 password update
  */
 export const postUserPasswordUpdateApi = (params: any) => {
-  return http.post(PORTAuth + `/user/password/update`, params);
+  return http.post(PORTAuth + `/user/pwd/edit`, params);
 };
 
 /**
  * @name 用户修改重置 reset
  */
 export const postUserPasswordResetApi = (params: any) => {
-  return http.post(PORTAuth + `/user/password/reset`, params);
+  return http.post(PORTAuth + `/user/pwd/reset`, params, {
+    params,
+  });
+};
+/**
+ * @name 启停用户
+ */
+export const enableInnerAccountApi = (params: any) => {
+  return http.post(PORTAuth + `/user/enable`, params, {
+    params,
+  });
 };

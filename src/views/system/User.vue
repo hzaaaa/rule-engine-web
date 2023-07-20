@@ -1,18 +1,37 @@
 <template>
   <div class="common-layout-system">
-    <el-form v-model="queryForm">
+    <!-- <el-form v-model="queryForm">
       <el-row>
         <el-col :span="24">
           <div class="wrap" style="display: flex">
             <el-form-item label="用户名：">
-              <el-input v-model="queryForm.username" style="width: 320px" clearable></el-input>
+              <el-input v-model="queryForm.name" style="width: 320px" clearable></el-input>
+            </el-form-item>
+            <el-form-item label="状态：">
+              <el-select v-model="queryForm.enabled" clearable placeholder="请选择" style="width: 320px">
+                <el-option
+                  v-for="item in [
+                    {
+                      label: '启用',
+                      value: 1,
+                    },
+                    {
+                      label: '停用',
+                      value: 0,
+                    },
+                  ]"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value"
+                />
+              </el-select>
             </el-form-item>
             <el-button type="primary" @click="searchByQueryForm">查询</el-button>
             <el-button @click="doReset">重置</el-button>
           </div>
         </el-col>
       </el-row>
-    </el-form>
+    </el-form> -->
 
     <div class="operat-buttons">
       <el-button type="primary" @click="openDrawer('新建')">新建</el-button>
@@ -31,13 +50,13 @@
       <el-table-column label="姓名" prop="nickName"></el-table-column>
       <el-table-column prop="phone" label="联系方式"></el-table-column>
       <el-table-column prop="email" label="邮箱"></el-table-column>
-      <el-table-column prop="roleName" label="角色"></el-table-column>
+      <!-- <el-table-column prop="roleName" label="角色"></el-table-column> -->
       <el-table-column prop="remark" label="备注"></el-table-column>
       <el-table-column prop="enabled" label="状态">
         <template #header>
           <div class="flex-align-center">
             状态
-            <el-dropdown>
+            <!-- <el-dropdown>
               <el-icon class="ml5"><Filter /></el-icon>
               <template #dropdown>
                 <el-dropdown-menu>
@@ -46,7 +65,7 @@
                   <el-dropdown-item @click="changeEnableParam(0)">已停用</el-dropdown-item>
                 </el-dropdown-menu>
               </template>
-            </el-dropdown>
+            </el-dropdown> -->
           </div>
         </template>
         <template #default="scope">
@@ -56,35 +75,29 @@
       </el-table-column>
       <el-table-column label="操作" width="410px" header-align="center" align="center">
         <template #default="scope">
-          <el-button type="primary" link v-permission="['authUser:edit']" @click="openDrawer('编辑', scope.row)">编辑</el-button>
-          <el-button type="primary" link v-permission="['authUser:resetPassword']" @click="resetPwdInnerAccount(scope.row.id)"
-            >重置密码</el-button
-          >
+          <el-button type="primary" link @click="openDrawer('编辑', scope.row)">编辑</el-button>
+          <el-button type="primary" link @click="resetPwdInnerAccount(scope.row.id)">重置密码</el-button>
 
-          <el-button
-            type="primary"
-            v-permission="['authUser:enableDisable']"
-            link
-            @click="enableInnerAccount(scope.row.id, scope.row.enabled)"
-            >{{ scope.row.enabled ? "停用" : "启用" }}</el-button
-          >
+          <el-button type="primary" link @click="enableInnerAccount(scope.row.id, scope.row.enabled)">{{
+            scope.row.enabled ? "停用" : "启用"
+          }}</el-button>
         </template>
       </el-table-column>
     </el-table>
     <div class="pagination-block">
       <el-pagination
-        :total="pageParams.total"
+        :page-sizes="pageParams.pageSizesList"
+        background
+        layout="total,sizes,prev, pager, next,jumper"
+        @size-change="handleSizeChange"
+        @current-change="handleCurrentPageChange"
         :current-page="pageParams.pageNum"
         :page-size="pageParams.pageSize"
-        @current-change="handleCurrentPageChange"
-        layout="total, prev, pager, next, jumper"
-        :page-sizes="[10, 20, 30, 40]"
-        @size-change="handleSizeChange"
-        background
-      >
-      </el-pagination>
+        :total="pageParams.total"
+      />
     </div>
     <AccountDrawer ref="drawerRef" @refreshData="refreshData" />
+    <ResetPasswordDialog ref="resetPasswordDialogRef" @refreshData="refreshData" />
   </div>
 </template>
 
@@ -92,13 +105,13 @@
 import { ref, reactive } from "vue";
 import useListPageHook from "@/hooks/listPage";
 import AccountDrawer from "./AccountDrawer.vue";
-import ResetPasswordDialog from "../components/ResetPasswordDialog.vue";
+import ResetPasswordDialog from "./ResetPasswordDialog.vue";
 import RoleAuthorityDialog from "../components/RoleAuthorityDialog.vue";
 import DataAuthorityDrawer from "../components/DataAuthorityDrawer.vue";
 import {
   getUserListApi,
   postUserPasswordResetApi,
-  // enableInnerAccountApi,
+  enableInnerAccountApi,
   postUserAddApi,
   postUserUpdateApi,
 } from "@/api/system/user";
@@ -134,7 +147,7 @@ const enableInnerAccount = async (userId: number, enabled: number) => {
   };
   // console.log(params);
   try {
-    // await enableInnerAccountApi(params);
+    await enableInnerAccountApi(params);
 
     // setTimeout(() => {
     refreshData();
@@ -154,7 +167,7 @@ const resetPwdInnerAccount = async (userId: number) => {
   try {
     const { data } = await postUserPasswordResetApi(params);
     ElMessage.success("重置密码成功");
-    // openResetPasswordDialog(userId, data);
+    openResetPasswordDialog(userId, data as string);
   } catch (err) {
     console.log(err);
   }
@@ -167,7 +180,7 @@ const changeEnableParam = (value: any) => {
 };
 
 const queryFormRaw = {
-  username: "",
+  name: "",
   enabled: null,
 };
 
@@ -213,7 +226,8 @@ let {
   border-radius: 10px;
 
   // display: flex;
-  height: fit-content;
+  // height: fit-content;
+  height: calc(100% - 20px);
   background: #fff;
   .el-form {
     margin-bottom: 0;
@@ -244,7 +258,7 @@ let {
   }
   .operat-buttons {
     display: flex;
-    margin-top: 26px;
+    // margin-top: 26px;
     margin-bottom: 12px;
     background-color: #fff;
     .space {

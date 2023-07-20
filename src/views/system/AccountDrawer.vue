@@ -20,11 +20,6 @@
         <el-input v-model="drawerProps.row!.email" place="请输入企业邮箱"></el-input>
       </el-form-item>
       <div class="edit-forbidden" v-if="!drawerProps.isEdit">
-        <el-form-item label="角色" prop="roleId">
-          <el-select v-model="drawerProps.row!.roleId">
-            <el-option v-for="item in roleList" :key="item.id" :label="item.name" :value="item.id" />
-          </el-select>
-        </el-form-item>
         <el-form-item label="密码" prop="password">
           <el-input v-model="drawerProps.row!.password" placeholder="不少于6位，需包含数字和字母"></el-input>
         </el-form-item>
@@ -80,11 +75,11 @@ const acceptParams = (params: DrawerProps) => {
 const accountFormRef = ref<FormInstance>();
 
 const accountFormRules = reactive<FormRules>({
-  nickName: [{ required: true, validator: validateNickName, trigger: "blur" }],
+  nickName: [{ validator: validateNickName, trigger: "blur" }],
   username: [{ required: true, validator: validateUsername, trigger: "blur" }],
-  phone: [{ required: true, validator: validateMobile, trigger: "blur" }],
-  email: [{ required: true, validator: validateEmail, trigger: "blur" }],
-  roleId: [{ required: true, message: "请选择角色！", trigger: "blur" }],
+  phone: [{ validator: validateMobile, trigger: "blur" }],
+  email: [{ validator: validateEmail, trigger: "blur" }],
+
   password: [{ required: true, validator: validatePwd, trigger: "blur" }],
   enabled: [{ required: true, message: "请选择启用状态！", trigger: "change" }],
 });
@@ -112,7 +107,7 @@ const submit = async (formEl: FormInstance | undefined) => {
           nickName: drawerProps.value.row.nickName,
           phone: drawerProps.value.row.phone,
           email: drawerProps.value.row.email,
-          roleId: drawerProps.value.row.roleId,
+
           password: drawerProps.value.row.password,
           enabled: drawerProps.value.row.enabled,
           remark: drawerProps.value.row.remark,
