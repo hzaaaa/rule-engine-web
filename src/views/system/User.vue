@@ -73,7 +73,7 @@
           <span v-else style="color: #a8abb2">{{ "已停用" }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="410px" header-align="center" align="center">
+      <el-table-column label="操作" width="210px" header-align="center" align="center">
         <template #default="scope">
           <el-button type="primary" link @click="openDrawer('编辑', scope.row)">编辑</el-button>
           <el-button type="primary" link @click="resetPwdInnerAccount(scope.row.id)">重置密码</el-button>
