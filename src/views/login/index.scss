@@ -20,14 +20,18 @@
     .login-main {
       display: flex;
       margin-top: 30px;
+      align-items: center;
       .login-left {
         // padding-top: 47px;
-        margin: 40px 0 0 50px;
+        // margin: 40px 0 0 50px;
 
         // .logo-left {
-        width: 467px;
-        height: 346px;
+        // width: 467px;
+        // height: 346px;
+        width: 521px;
+        height: 319px;
         background-image: url("@/assets/images/login/login_img.png");
+        background-size: 100% 100%;
 
         // }
       }
@@ -153,8 +157,8 @@
 @media screen and (width >= 1920px), screen and (-webkit-min-device-pixel-ratio: 2), screen and (max--moz-device-pixel-ratio: 2) {
   .login-container {
     background-image: url("@/assets/images/login/login_bg2x.png");
-    .login-left {
-      background-image: url("@/assets/images/login/login_img@2x.png");
-    }
+    // .login-left {
+    //   background-image: url("@/assets/images/login/login_img@2x.png");
+    // }
   }
 }
