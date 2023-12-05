@@ -38,14 +38,8 @@
       <div class="space"></div>
     </div>
 
-    <el-table
-      class="common-table"
-      v-loading="tableLoading"
-      :data="tableDataList"
-      cell-class-name="table-cell"
-      header-cell-class-name="header-cell"
-      border
-    >
+    <el-table class="common-table" v-loading="tableLoading" :data="tableDataList" cell-class-name="table-cell"
+      header-cell-class-name="header-cell" border>
       <el-table-column label="用户名" prop="username"></el-table-column>
       <el-table-column label="姓名" prop="nickName"></el-table-column>
       <el-table-column prop="phone" label="联系方式"></el-table-column>
@@ -85,16 +79,9 @@
       </el-table-column>
     </el-table>
     <div class="pagination-block">
-      <el-pagination
-        :page-sizes="pageParams.pageSizesList"
-        background
-        layout="total,sizes,prev, pager, next,jumper"
-        @size-change="handleSizeChange"
-        @current-change="handleCurrentPageChange"
-        :current-page="pageParams.pageNum"
-        :page-size="pageParams.pageSize"
-        :total="pageParams.total"
-      />
+      <el-pagination :page-sizes="pageParams.pageSizesList" background layout="total,sizes,prev, pager, next,jumper"
+        @size-change="handleSizeChange" @current-change="handleCurrentPageChange" :current-page="pageParams.pageNum"
+        :page-size="pageParams.pageSize" :total="pageParams.total" />
     </div>
     <AccountDrawer ref="drawerRef" @refreshData="refreshData" />
     <ResetPasswordDialog ref="resetPasswordDialogRef" @refreshData="refreshData" />
@@ -228,42 +215,53 @@ let {
   // height: fit-content;
   height: calc(100% - 20px);
   background: #fff;
+
   .el-form {
     margin-bottom: 0;
+
     .wrap {
       flex-wrap: wrap;
+
       .el-form-item {
         margin-bottom: 0;
+
         .el-input {
           width: 320px;
         }
       }
+
       .el-button {
         margin-left: 10px;
         width: 72px;
+
         &:first-of-type {
           margin-left: 20px;
         }
       }
     }
   }
+
   .el-select {
     width: 100%;
   }
+
   .search-buttons {
     display: flex;
     flex-direction: row-reverse;
     margin-bottom: 20px;
   }
+
   .operat-buttons {
     display: flex;
     // margin-top: 26px;
     margin-bottom: 12px;
     background-color: #fff;
+
     .space {
       flex: 1;
     }
   }
+
   .pagination-block {
     display: flex;
     flex-direction: row-reverse;
@@ -272,6 +270,7 @@ let {
     // margin-left: 30px;
     // margin-right: 30px;
   }
+
   :deep(.el-card__body) {
     padding: 0;
     padding-top: 0;
